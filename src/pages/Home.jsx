@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/AuthContext";
 import NoteCard from "@/components/notes/NoteCard";
 import NoteListToolbar from "@/components/notes/NoteListToolbar";
 import NotebookCover from "@/components/home/NotebookCover";
@@ -19,7 +18,6 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
-  const { user } = useAuth();
 
   const buildQuery = useCallback(() => {
     const query = {};
@@ -73,7 +71,7 @@ export default function Home() {
 
   return (
     <div>
-      <NotebookCover userName={user?.full_name} />
+      <NotebookCover />
 
       <section className="mt-10">
         <div className="mb-6 flex items-center gap-3">

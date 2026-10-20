@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Mic, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function NotebookCover({ userName }) {
+export default function NotebookCover() {
   return (
     <section className="relative overflow-hidden rounded-[26px] shadow-xl ring-1 ring-notebook-paper-foreground/10">
       <div
@@ -26,16 +26,7 @@ export default function NotebookCover({ userName }) {
         />
 
         <div className="relative mx-auto max-w-md pt-2 sm:pt-4">
-          <div className="flex items-end justify-end gap-3">
-            <span className="font-display text-[11px] tracking-[0.3em] text-notebook-paper-foreground/55">
-              氏名
-            </span>
-            <span className="w-36 truncate border-b border-notebook-paper-foreground/35 pb-1 text-right text-xs sm:w-44">
-              {userName || "\u00A0"}
-            </span>
-          </div>
-
-          <div className="mt-8 rounded-[12px] bg-notebook-label px-8 pb-7 pt-8 text-center text-notebook-label-foreground shadow-lg ring-1 ring-notebook-paper-foreground/10">
+          <div className="rounded-[12px] bg-notebook-label px-8 pb-7 pt-8 text-center text-notebook-label-foreground shadow-lg ring-1 ring-notebook-paper-foreground/10">
             <h1 className="font-display text-3xl font-semibold tracking-[0.2em] sm:text-4xl">
               講義ノート
             </h1>
