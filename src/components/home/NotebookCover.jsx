@@ -34,7 +34,7 @@ export default function NotebookCover() {
             />
           </div>
 
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6">
             <StickyNav />
           </div>
 

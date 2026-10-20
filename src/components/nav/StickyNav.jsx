@@ -12,14 +12,14 @@ const ITEMS = [
 
 const stickyClass = (tone, tilt) =>
   cn(
-    "inline-flex shrink-0 items-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-medium text-sticky-foreground shadow-[0_3px_6px_-2px_hsl(var(--notebook-paper-foreground)/0.4)] transition hover:-translate-y-0.5",
+    "flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2.5 text-xs font-medium text-sticky-foreground shadow-[0_3px_6px_-2px_hsl(var(--notebook-paper-foreground)/0.4)] transition hover:-translate-y-0.5",
     tone,
     tilt
   );
 
 export default function StickyNav() {
   return (
-    <nav className="flex items-center gap-2 overflow-x-auto py-0.5" aria-label="メインメニュー">
+    <nav className="grid grid-cols-2 gap-2" aria-label="メインメニュー">
       {ITEMS.map((item) => {
         const Icon = item.icon;
         const content = (
