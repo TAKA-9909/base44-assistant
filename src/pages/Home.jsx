@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import NoteCard from "@/components/notes/NoteCard";
@@ -18,6 +18,13 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === "#notes") {
+      document.getElementById("notes")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
 
   const buildQuery = useCallback(() => {
     const query = {};
@@ -73,7 +80,7 @@ export default function Home() {
     <div>
       <NotebookCover />
 
-      <section className="mt-10">
+      <section id="notes" className="mt-10 scroll-mt-20">
         <div className="mb-6 flex items-center gap-3">
           <span className="h-px flex-1 bg-border" />
           <h2 className="font-display text-lg tracking-wide">ノートの一覧</h2>
