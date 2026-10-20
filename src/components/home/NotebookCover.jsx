@@ -1,7 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Mic, PenLine } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import StickyNav from "@/components/nav/StickyNav";
 
 export default function NotebookCover() {
   return (
@@ -36,26 +34,8 @@ export default function NotebookCover() {
             />
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 rounded-[14px] bg-notebook-cover p-2.5 shadow-lg">
-            <Button
-              asChild
-              className="h-11 min-w-[150px] flex-1 rounded-lg bg-accent px-6 text-accent-foreground hover:bg-accent/90"
-            >
-              <Link to="/new">
-                <Mic className="mr-2 h-4 w-4" />
-                録音する
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="h-11 min-w-[150px] flex-1 rounded-lg border-notebook-cover-foreground/25 bg-transparent px-6 text-notebook-cover-foreground hover:bg-notebook-cover-foreground/10 hover:text-notebook-cover-foreground"
-            >
-              <Link to="/write">
-                <PenLine className="mr-2 h-4 w-4" />
-                ノートを書く
-              </Link>
-            </Button>
+          <div className="mt-6 flex justify-center">
+            <StickyNav />
           </div>
 
           <p className="mt-6 text-center text-xs leading-6 text-notebook-paper-foreground/65">

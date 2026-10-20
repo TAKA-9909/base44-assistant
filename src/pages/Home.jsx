@@ -80,7 +80,7 @@ export default function Home() {
     <div>
       <NotebookCover />
 
-      <section id="notes" className="mt-10 scroll-mt-32">
+      <section id="notes" className="mt-10 scroll-mt-20">
         <div className="mb-6 flex items-center gap-3">
           <span className="h-px flex-1 bg-border" />
           <h2 className="font-display text-lg tracking-wide">ノートの一覧</h2>
