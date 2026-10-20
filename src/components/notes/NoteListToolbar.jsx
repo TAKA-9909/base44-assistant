@@ -19,11 +19,11 @@ export default function NoteListToolbar({ search, onSearch, course, onCourse, co
             value={search}
             onChange={(event) => onSearch(event.target.value)}
             placeholder="タイトルで検索"
-            className="h-11 rounded-full pl-9"
+            className="h-11 rounded-md pl-9"
           />
         </div>
         <Select value={course} onValueChange={onCourse}>
-          <SelectTrigger className="h-11 rounded-full sm:w-48">
+          <SelectTrigger className="h-11 rounded-md sm:w-48">
             <SelectValue placeholder="科目で絞り込む" />
           </SelectTrigger>
           <SelectContent>
@@ -36,7 +36,7 @@ export default function NoteListToolbar({ search, onSearch, course, onCourse, co
           </SelectContent>
         </Select>
       </div>
-      <p className="text-sm text-muted-foreground sm:whitespace-nowrap">{total} 件のノート</p>
+      <p className="font-display text-sm text-muted-foreground sm:whitespace-nowrap">{total} 件のノート</p>
     </div>
   );
 }

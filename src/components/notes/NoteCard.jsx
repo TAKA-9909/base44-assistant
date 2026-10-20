@@ -7,8 +7,9 @@ export default function NoteCard({ note }) {
   return (
     <Link
       to={`/notes/${note.id}`}
-      className="group flex flex-col rounded-3xl border border-border/70 bg-card p-6 transition hover:border-primary/30 hover:shadow-md"
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-notebook-label p-5 pl-8 shadow-sm transition hover:border-accent/40 hover:shadow-md"
     >
+      <span className="absolute inset-y-0 left-3.5 w-px bg-accent/50" aria-hidden="true" />
       <div className="mb-3 flex items-center gap-2">
         {note.course && (
           <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">

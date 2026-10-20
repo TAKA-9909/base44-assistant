@@ -44,6 +44,13 @@ module.exports = {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
+  			notebook: {
+  				cover: 'hsl(var(--notebook-cover))',
+  				'cover-foreground': 'hsl(var(--notebook-cover-foreground))',
+  				label: 'hsl(var(--notebook-label))',
+  				'label-foreground': 'hsl(var(--notebook-label-foreground))',
+  				rule: 'hsl(var(--notebook-rule))'
+  			},
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',

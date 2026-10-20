@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Mic, PenLine } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 import NoteCard from "@/components/notes/NoteCard";
 import NoteListToolbar from "@/components/notes/NoteListToolbar";
+import NotebookCover from "@/components/home/NotebookCover";
 
 const PAGE_SIZE = 12;
 
@@ -18,6 +19,7 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
+  const { user } = useAuth();
 
   const buildQuery = useCallback(() => {
     const query = {};
@@ -71,31 +73,16 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Lecture Notes</p>
-          <h1 className="mt-3 font-display text-3xl leading-tight sm:text-4xl">講義ノート</h1>
-          <p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-            講義を録音すると、文字起こしと要約が自動でノートになります。録音せず、普通のノートとして書くこともできます。
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild className="h-11 rounded-full px-6">
-            <Link to="/new">
-              <Mic className="mr-2 h-4 w-4" />
-              録音する
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-11 rounded-full px-6">
-            <Link to="/write">
-              <PenLine className="mr-2 h-4 w-4" />
-              ノートを書く
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <NotebookCover userName={user?.full_name} />
 
-      <NoteListToolbar
+      <section className="mt-10">
+        <div className="mb-6 flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <h2 className="font-display text-lg tracking-wide">ノートの一覧</h2>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <NoteListToolbar
         search={search}
         onSearch={setSearch}
         course={course}
@@ -104,23 +91,24 @@ export default function Home() {
         total={total}
       />
 
+      <div className="notebook-ruled-soft rounded-[26px] border border-border bg-card/80 p-4 shadow-sm sm:p-6">
       {loading ? (
         <div className="grid gap-5 sm:grid-cols-2">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-40 animate-pulse rounded-3xl bg-secondary/60" />
+            <div key={item} className="h-40 animate-pulse rounded-2xl bg-secondary/60" />
           ))}
         </div>
       ) : notes.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border bg-card/60 px-6 py-16 text-center">
+        <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
           <p className="font-display text-lg">まだノートがありません</p>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
             「録音する」で講義からノートを自動作成、「ノートを書く」で自分の言葉で書けます。
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button asChild className="rounded-full px-6">
+            <Button asChild className="rounded-md bg-accent px-6 text-accent-foreground hover:bg-accent/90">
               <Link to="/new">最初の講義を録音する</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-full px-6">
+            <Button asChild variant="outline" className="rounded-md px-6">
               <Link to="/write">ノートを書く</Link>
             </Button>
           </div>
@@ -134,13 +122,15 @@ export default function Home() {
           </div>
           {hasMore && (
             <div className="mt-8 flex justify-center">
-              <Button variant="outline" onClick={loadMore} disabled={loadingMore} className="rounded-full px-6">
+              <Button variant="outline" onClick={loadMore} disabled={loadingMore} className="rounded-md px-6">
                 {loadingMore ? "読み込み中..." : "もっと見る"}
               </Button>
             </div>
           )}
         </>
       )}
+      </div>
+      </section>
     </div>
   );
 }
