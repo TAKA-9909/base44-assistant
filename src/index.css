@@ -33,11 +33,15 @@
     --chart-4: 40 60% 62%;
     --chart-5: 262 30% 52%;
 
-    --notebook-cover: 224 45% 19%;
-    --notebook-cover-foreground: 42 46% 95%;
-    --notebook-label: 44 44% 95%;
-    --notebook-label-foreground: 224 35% 17%;
-    --notebook-rule: 205 42% 70%;
+    --notebook-cover: 222 32% 17%;
+    --notebook-cover-foreground: 42 40% 96%;
+    --notebook-label: 42 34% 97%;
+    --notebook-label-foreground: 224 33% 16%;
+    --notebook-paper: 40 24% 93%;
+    --notebook-paper-foreground: 0 0% 16%;
+    --notebook-spine: 0 0% 15%;
+    --notebook-spine-foreground: 40 14% 88%;
+    --notebook-rule: 205 30% 70%;
 
     --font-display: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
     --font-heading: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
@@ -81,10 +85,14 @@
     --chart-4: 43 60% 62%;
     --chart-5: 262 36% 66%;
 
-    --notebook-cover: 224 34% 24%;
-    --notebook-cover-foreground: 42 40% 94%;
-    --notebook-label: 42 26% 90%;
-    --notebook-label-foreground: 224 32% 18%;
+    --notebook-cover: 222 26% 26%;
+    --notebook-cover-foreground: 42 36% 94%;
+    --notebook-label: 42 22% 91%;
+    --notebook-label-foreground: 224 32% 16%;
+    --notebook-paper: 30 8% 20%;
+    --notebook-paper-foreground: 40 20% 90%;
+    --notebook-spine: 0 0% 8%;
+    --notebook-spine-foreground: 40 12% 78%;
     --notebook-rule: 205 26% 46%;
 
     --sidebar-background: 225 22% 12%;
@@ -117,5 +125,19 @@
       hsl(var(--notebook-rule) / 0.2) 31px,
       hsl(var(--notebook-rule) / 0.2) 32px
     );
+  }
+
+  .notebook-paper-fiber {
+    background-image:
+      repeating-linear-gradient(101deg, hsl(var(--notebook-paper-foreground) / 0.035) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(14deg, hsl(var(--notebook-paper-foreground) / 0.022) 0 1px, transparent 1px 7px),
+      radial-gradient(circle at 18% 14%, hsl(var(--notebook-paper-foreground) / 0.05), transparent 55%),
+      radial-gradient(circle at 80% 84%, hsl(var(--notebook-paper-foreground) / 0.045), transparent 60%);
+  }
+
+  .notebook-spine-texture {
+    background-image:
+      repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.05) 0 1px, transparent 1px 3px),
+      linear-gradient(to right, hsl(0 0% 0% / 0.35), transparent 85%);
   }
 }

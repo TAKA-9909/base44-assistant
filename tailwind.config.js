@@ -49,6 +49,10 @@ module.exports = {
   				'cover-foreground': 'hsl(var(--notebook-cover-foreground))',
   				label: 'hsl(var(--notebook-label))',
   				'label-foreground': 'hsl(var(--notebook-label-foreground))',
+  				paper: 'hsl(var(--notebook-paper))',
+  				'paper-foreground': 'hsl(var(--notebook-paper-foreground))',
+  				spine: 'hsl(var(--notebook-spine))',
+  				'spine-foreground': 'hsl(var(--notebook-spine-foreground))',
   				rule: 'hsl(var(--notebook-rule))'
   			},
   			chart: {
