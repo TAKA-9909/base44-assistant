@@ -94,6 +94,8 @@ export default function NoteDetail() {
     );
   }
 
+  const isManual = note.source === "manual";
+
   return (
     <div className="mx-auto max-w-3xl">
       <Link
@@ -115,7 +117,13 @@ export default function NoteDetail() {
           <p className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
             {note.lecture_date && <span>{formatDate(note.lecture_date)}</span>}
             {note.duration_seconds > 0 && <span>{formatDuration(note.duration_seconds)}</span>}
-            <span>{note.source === "upload" ? "ファイル読み込み" : "その場で録音"}</span>
+            <span>
+              {note.source === "upload"
+                ? "ファイル読み込み"
+                : note.source === "manual"
+                  ? "自分で書いたノート"
+                  : "その場で録音"}
+            </span>
           </p>
         </div>
 
@@ -176,23 +184,30 @@ export default function NoteDetail() {
         </div>
       )}
 
-      <Tabs defaultValue="summary" className="mt-10">
+      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-10">
         <TabsList className="rounded-full">
-          <TabsTrigger value="summary" className="rounded-full px-5">
-            まとめ
-          </TabsTrigger>
-          <TabsTrigger value="transcript" className="rounded-full px-5">
-            文字起こし
-          </TabsTrigger>
+          {!isManual && (
+            <TabsTrigger value="summary" className="rounded-full px-5">
+              まとめ
+            </TabsTrigger>
+          )}
+          {!isManual && (
+            <TabsTrigger value="transcript" className="rounded-full px-5">
+              文字起こし
+            </TabsTrigger>
+          )}
           <TabsTrigger value="memo" className="rounded-full px-5">
-            自分のメモ
+            {isManual ? "ノート本文" : "自分のメモ"}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="summary" className="mt-8">
-          <NoteSummaryPanel note={note} />
-        </TabsContent>
+        {!isManual && (
+          <TabsContent value="summary" className="mt-8">
+            <NoteSummaryPanel note={note} />
+          </TabsContent>
+        )}
 
+        {!isManual && (
         <TabsContent value="transcript" className="mt-8">
           {note.transcript ? (
             <div className="space-y-4">
@@ -208,9 +223,19 @@ export default function NoteDetail() {
             <p className="text-sm text-muted-foreground">まだ文字起こしがありません。</p>
           )}
         </TabsContent>
+        )}
 
         <TabsContent value="memo" className="mt-8">
-          <NoteMemoEditor key={note.id} noteId={note.id} initialContent={note.content} />
+          <NoteMemoEditor
+            key={note.id}
+            noteId={note.id}
+            initialContent={note.content}
+            placeholder={
+              isManual
+                ? "ノートの本文です。箇条書きでも文章でも、自由に書き足せます。"
+                : "講義を聞いて気づいたこと、先生が強調していた点、次回までの課題などを自由に書けます。"
+            }
+          />
         </TabsContent>
       </Tabs>
     </div>

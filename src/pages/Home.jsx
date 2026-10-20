@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Mic } from "lucide-react";
+import { Mic, PenLine } from "lucide-react";
 import NoteCard from "@/components/notes/NoteCard";
 import NoteListToolbar from "@/components/notes/NoteListToolbar";
 
@@ -76,15 +76,23 @@ export default function Home() {
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Lecture Notes</p>
           <h1 className="mt-3 font-display text-3xl leading-tight sm:text-4xl">講義ノート</h1>
           <p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-            講義を録音すると、文字起こしと要約が自動でノートになります。自分のメモも書き足せます。
+            講義を録音すると、文字起こしと要約が自動でノートになります。録音せず、普通のノートとして書くこともできます。
           </p>
         </div>
-        <Button asChild className="h-11 rounded-full px-6">
-          <Link to="/new">
-            <Mic className="mr-2 h-4 w-4" />
-            録音する
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild className="h-11 rounded-full px-6">
+            <Link to="/new">
+              <Mic className="mr-2 h-4 w-4" />
+              録音する
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-11 rounded-full px-6">
+            <Link to="/write">
+              <PenLine className="mr-2 h-4 w-4" />
+              ノートを書く
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <NoteListToolbar
@@ -106,11 +114,16 @@ export default function Home() {
         <div className="rounded-3xl border border-dashed border-border bg-card/60 px-6 py-16 text-center">
           <p className="font-display text-lg">まだノートがありません</p>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
-            講義中に「録音する」を押すと、あとから読み返せるノートが作られます。
+            「録音する」で講義からノートを自動作成、「ノートを書く」で自分の言葉で書けます。
           </p>
-          <Button asChild className="mt-6 rounded-full px-6">
-            <Link to="/new">最初の講義を録音する</Link>
-          </Button>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button asChild className="rounded-full px-6">
+              <Link to="/new">最初の講義を録音する</Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-full px-6">
+              <Link to="/write">ノートを書く</Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>

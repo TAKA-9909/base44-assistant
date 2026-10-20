@@ -14,6 +14,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Home from '@/pages/Home';
 import NewLecture from '@/pages/NewLecture';
+import NewNote from '@/pages/NewNote';
 import NoteDetail from '@/pages/NoteDetail';
 // Add page imports here
 
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<NewLecture />} />
+          <Route path="/write" element={<NewNote />} />
           <Route path="/notes/:id" element={<NoteDetail />} />
         </Route>
       </Route>

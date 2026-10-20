@@ -34,7 +34,10 @@ export default function NoteCard({ note }) {
       </h3>
 
       <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-        {note.summary || note.transcript?.slice(0, 120) || "ノートの内容はまだありません。"}
+        {note.summary ||
+          note.transcript?.slice(0, 120) ||
+          note.content?.slice(0, 120) ||
+          "ノートの内容はまだありません。"}
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">

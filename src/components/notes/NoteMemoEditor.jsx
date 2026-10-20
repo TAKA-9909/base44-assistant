@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, Loader2 } from "lucide-react";
 
-export default function NoteMemoEditor({ noteId, initialContent }) {
+const DEFAULT_PLACEHOLDER =
+  "講義を聞いて気づいたこと、先生が強調していた点、次回までの課題などを自由に書けます。";
+
+export default function NoteMemoEditor({ noteId, initialContent, placeholder = DEFAULT_PLACEHOLDER }) {
   const [content, setContent] = useState(initialContent || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,7 +26,7 @@ export default function NoteMemoEditor({ noteId, initialContent }) {
       <Textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        placeholder="講義を聞いて気づいたこと、先生が強調していた点、次回までの課題などを自由に書けます。"
+        placeholder={placeholder}
         className="min-h-[320px] resize-y rounded-2xl p-5 text-[15px] leading-8"
       />
       <div className="flex items-center gap-3">

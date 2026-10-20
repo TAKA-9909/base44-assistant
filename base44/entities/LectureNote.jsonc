@@ -16,7 +16,8 @@
       "type": "string",
       "enum": [
         "recording",
-        "upload"
+        "upload",
+        "manual"
       ],
       "default": "recording"
     },
