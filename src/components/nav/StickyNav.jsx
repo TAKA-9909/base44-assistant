@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   { to: "/new", label: "録音する", icon: Mic, tone: "bg-sticky-2", tilt: "-rotate-1" },
   { to: "/write", label: "ノートを書く", icon: PenLine, tone: "bg-sticky-3", tilt: "rotate-1" },
-  { to: "/#notes", label: "ノートの一覧", icon: List, tone: "bg-sticky-4", tilt: "-rotate-1", hash: true },
-  { to: "/", label: "講義ノート一覧", icon: BookOpen, tone: "bg-sticky-1", tilt: "rotate-1", end: true }
+  { to: "/notes", label: "ノートの一覧", icon: List, tone: "bg-sticky-4", tilt: "-rotate-1", plain: true },
+  { to: "/notes", label: "講義ノート一覧", icon: BookOpen, tone: "bg-sticky-1", tilt: "rotate-1", end: true }
 ];
 
 const stickyClass = (tone, tilt) =>
@@ -29,7 +29,7 @@ export default function StickyNav() {
           </>
         );
 
-        if (item.hash) {
+        if (item.plain) {
           return (
             <Link key={item.to} to={item.to} className={stickyClass(item.tone, item.tilt)}>
               {content}
