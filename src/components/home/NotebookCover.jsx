@@ -26,7 +26,7 @@ export default function NotebookCover() {
         <div className="relative mx-auto max-w-md pt-2 sm:pt-4">
           <div className="rounded-[12px] bg-notebook-label px-8 pb-7 pt-8 text-center text-notebook-label-foreground shadow-lg ring-1 ring-notebook-paper-foreground/10">
             <h1 className="font-display text-3xl font-semibold tracking-[0.2em] sm:text-4xl">
-              講義ノート
+              My book
             </h1>
             <span
               className="mx-auto mt-5 block h-px w-24 bg-notebook-paper-foreground/40"

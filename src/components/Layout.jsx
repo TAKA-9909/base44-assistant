@@ -11,7 +11,7 @@ export default function Layout() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <BookOpen className="h-4 w-4" />
             </span>
-            <span className="font-display text-lg tracking-wide">講義ノート</span>
+            <span className="font-display text-lg tracking-wide">My book</span>
           </Link>
         </div>
       </header>
