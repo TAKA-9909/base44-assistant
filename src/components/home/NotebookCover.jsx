@@ -24,7 +24,7 @@ export default function NotebookCover() {
         />
 
         <div className="relative mx-auto max-w-md pt-2 sm:pt-4">
-          <div className="rounded-[12px] bg-notebook-label px-8 pb-7 pt-8 text-center text-notebook-label-foreground shadow-lg ring-1 ring-notebook-paper-foreground/10">
+          <div className="px-8 pb-7 pt-8 text-center text-notebook-paper-foreground">
             <h1 className="font-display text-3xl font-semibold tracking-[0.2em] sm:text-4xl">
               My book
             </h1>
