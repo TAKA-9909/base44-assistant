@@ -1,13 +1,13 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
-import { BookOpen, List, Mic, PenLine } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { FileAudio, List, Mic, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { to: "/new", label: "録音する", icon: Mic, tone: "bg-sticky-2", tilt: "-rotate-1" },
   { to: "/write", label: "ノートを書く", icon: PenLine, tone: "bg-sticky-3", tilt: "rotate-1" },
-  { to: "/notes", label: "ノートの一覧", icon: List, tone: "bg-sticky-4", tilt: "-rotate-1", plain: true },
-  { to: "/notes", label: "講義ノート一覧", icon: BookOpen, tone: "bg-sticky-1", tilt: "rotate-1", end: true }
+  { to: "/notes", label: "ノート一覧", icon: List, tone: "bg-sticky-4", tilt: "-rotate-1", end: true },
+  { to: "/recordings", label: "録音一覧", icon: FileAudio, tone: "bg-sticky-1", tilt: "rotate-1", end: true }
 ];
 
 const stickyClass = (tone, tilt) =>
@@ -22,31 +22,17 @@ export default function StickyNav() {
     <nav className="grid grid-cols-2 gap-2" aria-label="メインメニュー">
       {ITEMS.map((item) => {
         const Icon = item.icon;
-        const content = (
-          <>
-            <Icon className="h-3.5 w-3.5" />
-            <span className="whitespace-nowrap">{item.label}</span>
-          </>
-        );
-
-        if (item.plain) {
-          return (
-            <Link key={item.to} to={item.to} className={stickyClass(item.tone, item.tilt)}>
-              {content}
-            </Link>
-          );
-        }
-
         return (
           <NavLink
-            key={item.to}
+            key={item.label}
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
               cn(stickyClass(item.tone, item.tilt), isActive && "ring-2 ring-sticky-foreground/30")
             }
           >
-            {content}
+            <Icon className="h-3.5 w-3.5" />
+            <span className="whitespace-nowrap">{item.label}</span>
           </NavLink>
         );
       })}

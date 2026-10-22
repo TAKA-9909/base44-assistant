@@ -88,7 +88,7 @@ export default function NoteDetail() {
       <div className="py-20 text-center">
         <p className="font-display text-xl">ノートが見つかりませんでした</p>
         <Button asChild variant="outline" className="mt-6 rounded-full px-6">
-          <Link to="/">ノート一覧に戻る</Link>
+          <Link to="/notes">ノート一覧に戻る</Link>
         </Button>
       </div>
     );
@@ -99,11 +99,11 @@ export default function NoteDetail() {
   return (
     <div className="mx-auto max-w-3xl">
       <Link
-        to="/"
+        to={isManual ? "/notes" : "/recordings"}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        ノート一覧に戻る
+        {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
       </Link>
 
       <div className="mt-6 flex flex-wrap items-start justify-between gap-4">

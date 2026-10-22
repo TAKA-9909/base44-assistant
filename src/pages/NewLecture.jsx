@@ -72,11 +72,11 @@ export default function NewLecture() {
   return (
     <div className="mx-auto max-w-2xl">
       <Link
-        to="/"
+        to="/recordings"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        ノート一覧に戻る
+        録音一覧に戻る
       </Link>
 
       <h1 className="mt-6 font-display text-3xl leading-tight">講義を録音する</h1>

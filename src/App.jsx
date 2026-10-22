@@ -17,6 +17,7 @@ import NewLecture from '@/pages/NewLecture';
 import NewNote from '@/pages/NewNote';
 import NoteDetail from '@/pages/NoteDetail';
 import Notes from '@/pages/Notes';
+import Recordings from '@/pages/Recordings';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
           <Route path="/new" element={<NewLecture />} />
           <Route path="/write" element={<NewNote />} />
           <Route path="/notes" element={<Notes />} />
+          <Route path="/recordings" element={<Recordings />} />
           <Route path="/notes/:id" element={<NoteDetail />} />
         </Route>
       </Route>

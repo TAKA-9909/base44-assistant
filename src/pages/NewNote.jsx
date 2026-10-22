@@ -44,7 +44,7 @@ export default function NewNote() {
   return (
     <div className="mx-auto max-w-2xl">
       <Link
-        to="/"
+        to="/notes"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
