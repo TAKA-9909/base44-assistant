@@ -30,15 +30,26 @@ export const SYMBOL_OPTIONS = [
   "▲", "▼", "■", "□", "※", "≈"
 ];
 
-export const DEFAULT_STYLE = { font: "mincho", color: "ink", size: "m" };
+export const DEFAULT_STYLE = { font: "mincho", color: "ink", size: 18 };
+
+export const MIN_FONT_SIZE = 10;
+export const MAX_FONT_SIZE = 72;
 
 const option = (options, id) => options.find((entry) => entry.id === id) || options[0];
 
 export const fontStack = (id) => option(FONT_OPTIONS, id).value;
-export const fontPixels = (id) => option(SIZE_OPTIONS, id).value;
 export const inkColor = (id) => option(COLOR_OPTIONS, id).value;
 
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+// Accepts a pixel number or a preset size id (older notes store ids).
+export const fontPixels = (size) => {
+  if (typeof size === "number" && Number.isFinite(size)) {
+    return clamp(Math.round(size), MIN_FONT_SIZE, MAX_FONT_SIZE);
+  }
+  const preset = SIZE_OPTIONS.find((entry) => entry.id === size);
+  return preset ? preset.value : SIZE_OPTIONS[1].value;
+};
 
 let counter = 0;
 const createId = () => {

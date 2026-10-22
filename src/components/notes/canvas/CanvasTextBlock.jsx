@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { fontPixels, fontStack, inkColor } from "@/lib/notebookCanvas";
 
-export default function CanvasTextBlock({ block, onChange, onSelect }) {
+export default function CanvasTextBlock({ block, onChange, onSelect, onBlur }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -19,6 +19,7 @@ export default function CanvasTextBlock({ block, onChange, onSelect }) {
       value={block.text}
       onChange={(event) => onChange(event.target.value)}
       onFocus={onSelect}
+      onBlur={onBlur}
       placeholder="ここに入力"
       className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-notebook-paper-foreground/35"
       style={{

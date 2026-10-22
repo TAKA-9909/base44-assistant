@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Baseline, Highlighter, ImagePlus, Loader2, Palette, Shapes, Type } from "lucide-react";
-import { COLOR_OPTIONS, FONT_OPTIONS, SIZE_OPTIONS, SYMBOL_OPTIONS } from "@/lib/notebookCanvas";
+import { COLOR_OPTIONS, FONT_OPTIONS, SYMBOL_OPTIONS, fontPixels } from "@/lib/notebookCanvas";
+import CanvasSizeControl from "./CanvasSizeControl";
 
 const ITEM =
   "flex flex-1 flex-col items-center gap-1.5 border-l border-canvas-bar-foreground/15 px-2 py-3.5 text-[11px] tracking-wide transition first:border-l-0 hover:bg-canvas-bar-foreground/10 disabled:opacity-60";
@@ -83,21 +84,11 @@ export default function CanvasToolbar({
           <button type="button" className={ITEM}>
             <Baseline className="h-4 w-4" />
             <span>サイズ</span>
+            <span className="text-[10px] text-canvas-bar-foreground/60">{fontPixels(size)}px</span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" side="top" className="w-40 p-2">
-          {SIZE_OPTIONS.map((entry) => (
-            <button
-              key={entry.id}
-              type="button"
-              onClick={() => onSize(entry.id)}
-              className={OPTION}
-              style={{ fontSize: `${Math.min(entry.value, 24)}px` }}
-            >
-              <span>{entry.label}</span>
-              {size === entry.id && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-accent" />}
-            </button>
-          ))}
+        <PopoverContent align="start" side="top" className="w-56 p-3">
+          <CanvasSizeControl size={size} onSize={onSize} />
         </PopoverContent>
       </Popover>
 
