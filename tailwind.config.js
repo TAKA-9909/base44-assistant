@@ -55,6 +55,10 @@ module.exports = {
   				'spine-foreground': 'hsl(var(--notebook-spine-foreground))',
   				rule: 'hsl(var(--notebook-rule))'
   			},
+  			canvas: {
+  				bar: 'hsl(var(--canvas-bar))',
+  				'bar-foreground': 'hsl(var(--canvas-bar-foreground))'
+  			},
   			sticky: {
   				foreground: 'hsl(var(--sticky-foreground))',
   				'1': 'hsl(var(--sticky-1))',

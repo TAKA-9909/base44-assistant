@@ -49,6 +49,9 @@
     --sticky-3: 4 74% 87%;
     --sticky-4: 138 34% 82%;
 
+    --canvas-bar: 8 8% 39%;
+    --canvas-bar-foreground: 0 0% 100%;
+
     --font-display: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
     --font-heading: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
     --font-body: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
@@ -106,6 +109,9 @@
     --sticky-2: 199 38% 40%;
     --sticky-3: 4 40% 42%;
     --sticky-4: 138 20% 36%;
+
+    --canvas-bar: 8 10% 30%;
+    --canvas-bar-foreground: 0 0% 96%;
 
     --sidebar-background: 225 22% 12%;
     --sidebar-foreground: 40 20% 90%;

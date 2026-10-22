@@ -2,8 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Loader2, AlertCircle, CalendarDays, Clock } from "lucide-react";
 import { formatDate, formatDuration } from "@/lib/lectureUtils";
+import { canvasPreview, parseCanvas } from "@/lib/notebookCanvas";
 
 export default function NoteCard({ note }) {
+  const isCanvas = Boolean(parseCanvas(note.content));
+  const preview =
+    note.summary ||
+    note.transcript?.slice(0, 120) ||
+    canvasPreview(note.content) ||
+    (isCanvas ? null : note.content?.slice(0, 120));
+
   return (
     <Link
       to={`/notes/${note.id}`}
@@ -35,10 +43,7 @@ export default function NoteCard({ note }) {
       </h3>
 
       <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-        {note.summary ||
-          note.transcript?.slice(0, 120) ||
-          note.content?.slice(0, 120) ||
-          "ノートの内容はまだありません。"}
+        {preview || "ノートの内容はまだありません。"}
       </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
