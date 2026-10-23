@@ -113,6 +113,26 @@ export function createMarkerBlock(x, y, color, width = 220) {
   };
 }
 
+export const STAMP_SIZE = 34;
+export const MIN_STAMP_SIZE = 14;
+export const MAX_STAMP_SIZE = 140;
+
+// スタンプはフォント設定を持たず、大きさとインク色だけで描く
+export const stampSize = (block) =>
+  clamp(Math.round(block.size || STAMP_SIZE), MIN_STAMP_SIZE, MAX_STAMP_SIZE);
+
+export function createStampBlock(symbol, x, y, color) {
+  return {
+    id: createId(),
+    type: "stamp",
+    x: Math.round(x),
+    y: Math.round(y),
+    symbol,
+    size: STAMP_SIZE,
+    color
+  };
+}
+
 export function parseCanvas(content) {
   if (typeof content !== "string" || !content.trim()) return null;
   try {

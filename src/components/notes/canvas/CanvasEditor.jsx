@@ -7,6 +7,7 @@ import {
   clamp,
   createImageBlock,
   createMarkerBlock,
+  createStampBlock,
   createTextBlock
 } from "@/lib/notebookCanvas";
 
@@ -40,7 +41,7 @@ export default function CanvasEditor({ blocks, onChange }) {
   const applyStyle = (patch) => {
     setStyle((current) => ({ ...current, ...patch }));
     if (!selected) return;
-    if (patch.color && selected.type === "marker") {
+    if (patch.color && (selected.type === "marker" || selected.type === "stamp")) {
       updateBlock(selected.id, { color: patch.color });
       return;
     }
@@ -52,11 +53,7 @@ export default function CanvasEditor({ blocks, onChange }) {
   };
 
   const handleInsertSymbol = (symbol) => {
-    if (selected?.type === "text") {
-      updateBlock(selected.id, { text: `${selected.text}${symbol}` });
-      return;
-    }
-    appendBlock({ ...createTextBlock(lastPoint.current.x, lastPoint.current.y, style), text: symbol });
+    appendBlock(createStampBlock(symbol, lastPoint.current.x, lastPoint.current.y, style.color));
   };
 
   const handleDelete = (id) => {

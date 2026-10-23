@@ -3,10 +3,14 @@ import CanvasBlock from "./CanvasBlock";
 import {
   MARKER_HEIGHT,
   MAX_MARKER_HEIGHT,
+  MAX_STAMP_SIZE,
   MIN_MARKER_HEIGHT,
+  MIN_STAMP_SIZE,
   PAPER_HEIGHT,
   PAPER_WIDTH,
-  clamp
+  STAMP_SIZE,
+  clamp,
+  stampSize
 } from "@/lib/notebookCanvas";
 
 export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onUpdate, onDelete }) {
@@ -29,13 +33,15 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
     const startX = event.clientX;
     const startY = event.clientY;
     const width = surfaceWidth();
+    // スタンプは固有の幅を持たないので、文字の大きさを目安にする
+    const spanWidth = block.width || (block.type === "stamp" ? stampSize(block) : 0);
 
     const move = (moveEvent) => {
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
       if (mode === "move") {
         onUpdate(block.id, {
-          x: Math.round(clamp(block.x + dx, 0, Math.max(width - block.width, 0))),
+          x: Math.round(clamp(block.x + dx, 0, Math.max(width - spanWidth, 0))),
           y: Math.round(clamp(block.y + dy, 0, PAPER_HEIGHT - 44))
         });
         return;
@@ -44,6 +50,14 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
         onUpdate(block.id, {
           height: Math.round(
             clamp((block.height || MARKER_HEIGHT) + dy, MIN_MARKER_HEIGHT, MAX_MARKER_HEIGHT)
+          )
+        });
+        return;
+      }
+      if (block.type === "stamp") {
+        onUpdate(block.id, {
+          size: Math.round(
+            clamp((block.size || STAMP_SIZE) + dx + dy, MIN_STAMP_SIZE, MAX_STAMP_SIZE)
           )
         });
         return;

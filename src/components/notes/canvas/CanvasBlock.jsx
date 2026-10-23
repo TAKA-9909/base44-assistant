@@ -2,7 +2,7 @@ import React from "react";
 import { GripVertical, Maximize2, MoveVertical, X } from "lucide-react";
 import CanvasTextBlock from "./CanvasTextBlock";
 import NoteCanvasImage from "./NoteCanvasImage";
-import { inkColor, markerClipPath, markerHeight } from "@/lib/notebookCanvas";
+import { inkColor, markerClipPath, markerHeight, stampSize } from "@/lib/notebookCanvas";
 
 const HANDLE =
   "flex h-6 w-6 items-center justify-center rounded-full bg-canvas-bar text-canvas-bar-foreground shadow";
@@ -18,11 +18,16 @@ export default function CanvasBlock({
   onResizeHeightStart
 }) {
   const markerSize = block.type === "marker" ? markerHeight(block) : 0;
+  const stampPx = block.type === "stamp" ? stampSize(block) : 0;
 
   return (
     <div
       className={selected ? "absolute rounded-md ring-2 ring-accent/60" : "absolute"}
-      style={{ left: `${block.x}px`, top: `${block.y}px`, width: `${block.width}px` }}
+      style={{
+        left: `${block.x}px`,
+        top: `${block.y}px`,
+        ...(block.width ? { width: `${block.width}px` } : {})
+      }}
       onPointerDown={onSelect}
     >
       {block.type === "text" && (
@@ -56,6 +61,15 @@ export default function CanvasBlock({
         />
       )}
 
+      {block.type === "stamp" && (
+        <div
+          className="select-none leading-none"
+          style={{ fontSize: `${stampPx}px`, color: inkColor(block.color) }}
+        >
+          {block.symbol}
+        </div>
+      )}
+
       {selected && (
         <>
           <button
@@ -78,7 +92,7 @@ export default function CanvasBlock({
           {block.type !== "text" && (
             <button
               type="button"
-              aria-label="幅を変える"
+              aria-label={block.type === "stamp" ? "大きさを変える" : "幅を変える"}
               onPointerDown={onResizeStart}
               className={`${HANDLE} absolute -bottom-3 -right-3 cursor-nwse-resize touch-none`}
             >
