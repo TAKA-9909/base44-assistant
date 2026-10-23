@@ -19,6 +19,7 @@ export default function CanvasBlock({ block, selected, onSelect, onChange, onDel
           block={block}
           onSelect={onSelect}
           onChange={(text) => onChange({ text })}
+          onWidth={(width) => onChange({ width })}
           onBlur={() => {
             if (!block.text.trim()) onDelete();
           }}
