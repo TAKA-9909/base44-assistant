@@ -10,6 +10,7 @@ import {
   PAPER_WIDTH,
   STAMP_SIZE,
   clamp,
+  normalizeAngle,
   stampSize
 } from "@/lib/notebookCanvas";
 
@@ -36,9 +37,22 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
     // スタンプは固有の幅を持たないので、文字の大きさを目安にする
     const spanWidth = block.width || (block.type === "stamp" ? stampSize(block) : 0);
 
+    // 回転はブロックの中心を軸にする（回転しても中心は動かない）
+    const box = event.currentTarget?.parentElement?.getBoundingClientRect();
+    const center = box
+      ? { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+      : { x: startX, y: startY };
+    const pointerAngle = (pointEvent) =>
+      (Math.atan2(pointEvent.clientY - center.y, pointEvent.clientX - center.x) * 180) / Math.PI;
+    const startAngle = pointerAngle(event);
+
     const move = (moveEvent) => {
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
+      if (mode === "rotate") {
+        onUpdate(block.id, { angle: normalizeAngle((block.angle || 0) + pointerAngle(moveEvent) - startAngle) });
+        return;
+      }
       if (mode === "move") {
         onUpdate(block.id, {
           x: Math.round(clamp(block.x + dx, 0, Math.max(width - spanWidth, 0))),
@@ -100,6 +114,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
           onMoveStart={(event) => beginGesture(event, block, "move")}
           onResizeStart={(event) => beginGesture(event, block, "resize")}
           onResizeHeightStart={(event) => beginGesture(event, block, "height")}
+          onRotateStart={(event) => beginGesture(event, block, "rotate")}
         />
       ))}
     </div>

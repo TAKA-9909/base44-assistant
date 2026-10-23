@@ -45,6 +45,12 @@ export const SYMBOL_OPTIONS = [
 
 export const DEFAULT_STYLE = { font: "mincho", color: "ink", size: 18 };
 
+// ブロックは共通で angle（度）を持つ。未設定は 0 度として扱う。
+export const normalizeAngle = (value) => {
+  const rounded = Math.round(Number(value) || 0);
+  return ((rounded % 360) + 360) % 360;
+};
+
 export const MIN_FONT_SIZE = 10;
 export const MAX_FONT_SIZE = 72;
 

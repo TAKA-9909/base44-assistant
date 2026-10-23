@@ -1,5 +1,5 @@
 import React from "react";
-import { GripVertical, Maximize2, MoveVertical, X } from "lucide-react";
+import { GripVertical, Maximize2, MoveVertical, RotateCw, X } from "lucide-react";
 import CanvasTextBlock from "./CanvasTextBlock";
 import NoteCanvasImage from "./NoteCanvasImage";
 import { inkColor, markerClipPath, markerHeight, stampSize } from "@/lib/notebookCanvas";
@@ -15,7 +15,8 @@ export default function CanvasBlock({
   onDelete,
   onMoveStart,
   onResizeStart,
-  onResizeHeightStart
+  onResizeHeightStart,
+  onRotateStart
 }) {
   const markerSize = block.type === "marker" ? markerHeight(block) : 0;
   const stampPx = block.type === "stamp" ? stampSize(block) : 0;
@@ -26,7 +27,8 @@ export default function CanvasBlock({
       style={{
         left: `${block.x}px`,
         top: `${block.y}px`,
-        ...(block.width ? { width: `${block.width}px` } : {})
+        ...(block.width ? { width: `${block.width}px` } : {}),
+        ...(block.angle ? { transform: `rotate(${block.angle}deg)` } : {})
       }}
       onPointerDown={onSelect}
     >
@@ -88,6 +90,14 @@ export default function CanvasBlock({
             className={`${HANDLE} absolute -top-8 left-8`}
           >
             <X className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="回転"
+            onPointerDown={onRotateStart}
+            className={`${HANDLE} absolute -top-8 right-0 cursor-grab touch-none`}
+          >
+            <RotateCw className="h-3.5 w-3.5" />
           </button>
           {block.type !== "text" && (
             <button
