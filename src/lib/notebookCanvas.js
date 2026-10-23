@@ -4,7 +4,11 @@ export const PAPER_HEIGHT = 780;
 
 export const FONT_OPTIONS = [
   { id: "mincho", label: "明朝", value: "var(--font-display)" },
+  { id: "classic", label: "古明朝", value: "var(--font-classic)" },
+  { id: "antique", label: "アンティーク", value: "var(--font-antique)" },
   { id: "gothic", label: "ゴシック", value: "var(--font-body)" },
+  { id: "rounded", label: "丸ゴシック", value: "var(--font-rounded)" },
+  { id: "hand", label: "手書き", value: "var(--font-hand)" },
   { id: "mono", label: "等幅", value: "var(--font-mono)" }
 ];
 
@@ -17,11 +21,20 @@ export const SIZE_OPTIONS = [
 
 export const COLOR_OPTIONS = [
   { id: "ink", label: "黒", value: "hsl(var(--notebook-paper-foreground))" },
+  { id: "gray", label: "灰", value: "hsl(var(--ink-gray))" },
   { id: "navy", label: "紺", value: "hsl(var(--primary))" },
+  { id: "blue", label: "青", value: "hsl(var(--ink-blue))" },
+  { id: "sky", label: "空色", value: "hsl(var(--ink-sky))" },
+  { id: "teal", label: "青緑", value: "hsl(var(--ink-teal))" },
+  { id: "green", label: "緑", value: "hsl(var(--ink-green))" },
+  { id: "olive", label: "萌黄", value: "hsl(var(--ink-olive))" },
+  { id: "amber", label: "山吹", value: "hsl(var(--ink-amber))" },
+  { id: "orange", label: "橙", value: "hsl(var(--ink-orange))" },
+  { id: "brown", label: "茶", value: "hsl(var(--ink-brown))" },
   { id: "red", label: "赤", value: "hsl(var(--destructive))" },
   { id: "vermilion", label: "朱", value: "hsl(var(--accent))" },
-  { id: "teal", label: "青緑", value: "hsl(var(--chart-3))" },
-  { id: "purple", label: "紫", value: "hsl(var(--chart-5))" }
+  { id: "pink", label: "桃", value: "hsl(var(--ink-pink))" },
+  { id: "purple", label: "紫", value: "hsl(var(--ink-purple))" }
 ];
 
 export const SYMBOL_OPTIONS = [

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Shippori+Antique&family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Old+Mincho:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -43,6 +43,18 @@
     --notebook-spine-foreground: 40 14% 88%;
     --notebook-rule: 205 30% 70%;
 
+    --ink-gray: 220 10% 44%;
+    --ink-blue: 212 62% 40%;
+    --ink-sky: 199 58% 44%;
+    --ink-teal: 172 42% 32%;
+    --ink-green: 145 44% 30%;
+    --ink-olive: 82 38% 32%;
+    --ink-amber: 38 74% 38%;
+    --ink-orange: 24 80% 44%;
+    --ink-brown: 22 40% 32%;
+    --ink-pink: 335 58% 50%;
+    --ink-purple: 268 42% 44%;
+
     --sticky-foreground: 224 26% 20%;
     --sticky-1: 45 84% 83%;
     --sticky-2: 199 68% 84%;
@@ -56,6 +68,10 @@
     --font-heading: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
     --font-body: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-classic: 'Zen Old Mincho', 'Hiragino Mincho ProN', serif;
+    --font-antique: 'Shippori Antique', 'Hiragino Kaku Gothic ProN', sans-serif;
+    --font-rounded: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', 'Hiragino Sans', sans-serif;
+    --font-hand: 'Klee One', 'Hiragino Kaku Gothic ProN', sans-serif;
 
     --sidebar-background: 40 30% 96%;
     --sidebar-foreground: 224 20% 26%;
@@ -103,6 +119,18 @@
     --notebook-spine: 0 0% 8%;
     --notebook-spine-foreground: 40 12% 78%;
     --notebook-rule: 205 26% 46%;
+
+    --ink-gray: 220 12% 70%;
+    --ink-blue: 212 60% 66%;
+    --ink-sky: 199 62% 66%;
+    --ink-teal: 172 42% 58%;
+    --ink-green: 145 40% 58%;
+    --ink-olive: 82 36% 58%;
+    --ink-amber: 40 70% 62%;
+    --ink-orange: 26 78% 62%;
+    --ink-brown: 24 38% 60%;
+    --ink-pink: 335 62% 72%;
+    --ink-purple: 268 45% 72%;
 
     --sticky-foreground: 42 30% 94%;
     --sticky-1: 45 44% 38%;

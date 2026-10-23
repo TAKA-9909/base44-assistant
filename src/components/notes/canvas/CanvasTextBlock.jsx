@@ -16,16 +16,18 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur }) {
       id={`canvas-text-${block.id}`}
       ref={ref}
       rows={1}
+      wrap="off"
       value={block.text}
       onChange={(event) => onChange(event.target.value)}
       onFocus={onSelect}
       onBlur={onBlur}
       placeholder="ここに入力"
-      className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-notebook-paper-foreground/35"
+      className="block w-full resize-none overflow-x-auto overflow-y-hidden border-0 bg-transparent p-0 outline-none placeholder:text-notebook-paper-foreground/35"
       style={{
         fontFamily: fontStack(block.font),
         fontSize: `${fontPixels(block.size)}px`,
         lineHeight: 1.7,
+        whiteSpace: "pre",
         color: inkColor(block.color)
       }}
     />

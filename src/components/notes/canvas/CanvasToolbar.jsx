@@ -60,8 +60,8 @@ export default function CanvasToolbar({
             <span>カラー</span>
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" side="top" className="w-48 p-3">
-          <div className="grid grid-cols-3 gap-2">
+        <PopoverContent align="start" side="top" className="w-64 p-3">
+          <div className="grid grid-cols-4 gap-2">
             {COLOR_OPTIONS.map((entry) => (
               <button
                 key={entry.id}
