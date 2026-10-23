@@ -88,8 +88,29 @@ export function createImageBlock(fileUri, x, y, width = 260) {
   return { id: createId(), type: "image", x: Math.round(x), y: Math.round(y), width, file_uri: fileUri };
 }
 
+export const MARKER_HEIGHT = 16;
+export const MIN_MARKER_HEIGHT = 4;
+export const MAX_MARKER_HEIGHT = 160;
+
+export const markerHeight = (block) =>
+  clamp(Math.round(block.height || MARKER_HEIGHT), MIN_MARKER_HEIGHT, MAX_MARKER_HEIGHT);
+
+// 上下の辺は水平、左右の辺は右に傾いた平行四辺形にする
+export const markerClipPath = (height) => {
+  const shear = clamp(Math.round(height * 0.5), 4, 40);
+  return `polygon(${shear}px 0, 100% 0, calc(100% - ${shear}px) 100%, 0 100%)`;
+};
+
 export function createMarkerBlock(x, y, color, width = 220) {
-  return { id: createId(), type: "marker", x: Math.round(x), y: Math.round(y), width, color };
+  return {
+    id: createId(),
+    type: "marker",
+    x: Math.round(x),
+    y: Math.round(y),
+    width,
+    height: MARKER_HEIGHT,
+    color
+  };
 }
 
 export function parseCanvas(content) {

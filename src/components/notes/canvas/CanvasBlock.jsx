@@ -1,13 +1,24 @@
 import React from "react";
-import { GripVertical, Maximize2, X } from "lucide-react";
+import { GripVertical, Maximize2, MoveVertical, X } from "lucide-react";
 import CanvasTextBlock from "./CanvasTextBlock";
 import NoteCanvasImage from "./NoteCanvasImage";
-import { inkColor } from "@/lib/notebookCanvas";
+import { inkColor, markerClipPath, markerHeight } from "@/lib/notebookCanvas";
 
 const HANDLE =
   "flex h-6 w-6 items-center justify-center rounded-full bg-canvas-bar text-canvas-bar-foreground shadow";
 
-export default function CanvasBlock({ block, selected, onSelect, onChange, onDelete, onMoveStart, onResizeStart }) {
+export default function CanvasBlock({
+  block,
+  selected,
+  onSelect,
+  onChange,
+  onDelete,
+  onMoveStart,
+  onResizeStart,
+  onResizeHeightStart
+}) {
+  const markerSize = block.type === "marker" ? markerHeight(block) : 0;
+
   return (
     <div
       className={selected ? "absolute rounded-md ring-2 ring-accent/60" : "absolute"}
@@ -36,7 +47,13 @@ export default function CanvasBlock({ block, selected, onSelect, onChange, onDel
       )}
 
       {block.type === "marker" && (
-        <div className="h-3 rounded-full" style={{ background: inkColor(block.color) }} />
+        <div
+          style={{
+            height: `${markerSize}px`,
+            background: inkColor(block.color),
+            clipPath: markerClipPath(markerSize)
+          }}
+        />
       )}
 
       {selected && (
@@ -66,6 +83,16 @@ export default function CanvasBlock({ block, selected, onSelect, onChange, onDel
               className={`${HANDLE} absolute -bottom-3 -right-3 cursor-nwse-resize touch-none`}
             >
               <Maximize2 className="h-3 w-3" />
+            </button>
+          )}
+          {block.type === "marker" && (
+            <button
+              type="button"
+              aria-label="高さを変える"
+              onPointerDown={onResizeHeightStart}
+              className={`${HANDLE} absolute -bottom-3 left-1/2 -translate-x-1/2 cursor-ns-resize touch-none`}
+            >
+              <MoveVertical className="h-3 w-3" />
             </button>
           )}
         </>

@@ -1,6 +1,13 @@
 import React, { useRef } from "react";
 import CanvasBlock from "./CanvasBlock";
-import { PAPER_HEIGHT, PAPER_WIDTH, clamp } from "@/lib/notebookCanvas";
+import {
+  MARKER_HEIGHT,
+  MAX_MARKER_HEIGHT,
+  MIN_MARKER_HEIGHT,
+  PAPER_HEIGHT,
+  PAPER_WIDTH,
+  clamp
+} from "@/lib/notebookCanvas";
 
 export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onUpdate, onDelete }) {
   const surfaceRef = useRef(null);
@@ -30,6 +37,14 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
         onUpdate(block.id, {
           x: Math.round(clamp(block.x + dx, 0, Math.max(width - block.width, 0))),
           y: Math.round(clamp(block.y + dy, 0, PAPER_HEIGHT - 44))
+        });
+        return;
+      }
+      if (mode === "height") {
+        onUpdate(block.id, {
+          height: Math.round(
+            clamp((block.height || MARKER_HEIGHT) + dy, MIN_MARKER_HEIGHT, MAX_MARKER_HEIGHT)
+          )
         });
         return;
       }
@@ -70,6 +85,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
           onDelete={() => onDelete(block.id)}
           onMoveStart={(event) => beginGesture(event, block, "move")}
           onResizeStart={(event) => beginGesture(event, block, "resize")}
+          onResizeHeightStart={(event) => beginGesture(event, block, "height")}
         />
       ))}
     </div>
