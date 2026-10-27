@@ -24,9 +24,9 @@ import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanva
 import { cn } from "@/lib/utils";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
-// 選択中のタブのラベルにマーカーを引く
+// 3つのタブは同じ背景のまま、選択中のラベルにだけマーカーを引く
 const TAB_TRIGGER =
-  "tab-trigger rounded-xl px-4 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:font-medium data-[state=active]:text-foreground";
+  "tab-trigger rounded-xl px-4 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:bg-transparent data-[state=active]:font-medium data-[state=active]:text-foreground data-[state=active]:shadow-none";
 
 export default function NoteDetail() {
   const { id } = useParams();
