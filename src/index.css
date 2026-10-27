@@ -20,6 +20,7 @@
     --muted-foreground: 224 12% 45%;
     --accent: 12 68% 52%;
     --accent-foreground: 0 0% 100%;
+    --marker: 45 93% 62%;
     --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 38 22% 87%;
@@ -103,6 +104,7 @@
     --muted-foreground: 40 12% 70%;
     --accent: 12 70% 58%;
     --accent-foreground: 225 26% 12%;
+    --marker: 45 68% 40%;
     --destructive: 0 62% 46%;
     --destructive-foreground: 0 0% 100%;
     --border: 225 14% 22%;
@@ -195,5 +197,23 @@
     background-image:
       repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.05) 0 1px, transparent 1px 3px),
       linear-gradient(to right, hsl(0 0% 0% / 0.35), transparent 85%);
+  }
+
+  /* 押された一文に引くマーカー（蛍光ペンの下線帯） */
+  .marker-ink {
+    background-image: linear-gradient(hsl(var(--marker) / 0.85), hsl(var(--marker) / 0.85));
+    background-repeat: no-repeat;
+    background-size: 100% 55%;
+    background-position: 0 82%;
+    border-radius: 2px;
+  }
+
+  .marker-target {
+    border-radius: 2px;
+    transition: background-color 0.15s ease-out;
+  }
+
+  .marker-target:hover {
+    background-color: hsl(var(--marker) / 0.28);
   }
 }

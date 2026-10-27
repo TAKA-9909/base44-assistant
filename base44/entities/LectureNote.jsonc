@@ -84,6 +84,12 @@
     },
     "content": {
       "type": "string"
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

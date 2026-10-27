@@ -86,6 +86,7 @@ export function createTextBlock(x, y, style, width = 320) {
     y: Math.round(y),
     width,
     text: "",
+    marks: [],
     font: style.font,
     color: style.color,
     size: style.size
