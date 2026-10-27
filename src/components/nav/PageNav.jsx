@@ -1,34 +1,42 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { FileAudio, Home, Mic, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// ホームの付箋タグと同じ色・アイコンで揃える
 const ITEMS = [
-  { to: "/", label: "ホーム", fill: "bg-tab-1", end: true },
-  { to: "/new", label: "録音", fill: "bg-tab-2" },
-  { to: "/write", label: "ノート書く", fill: "bg-tab-3" },
-  { to: "/recordings", label: "録音一覧", fill: "bg-tab-4" }
+  { to: "/", label: "ホーム", icon: Home, tone: "bg-sticky-4", end: true },
+  { to: "/new", label: "録音する", icon: Mic, tone: "bg-sticky-2" },
+  { to: "/write", label: "ノートを書く", icon: PenLine, tone: "bg-sticky-3" },
+  { to: "/recordings", label: "録音一覧", icon: FileAudio, tone: "bg-sticky-1" }
 ];
 
 // 白いページの上辺に付く、縦書きの付箋タブ
 export default function PageNav() {
   return (
-    <nav className="flex items-end gap-1.5 pl-3">
-      {ITEMS.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.end}
-          className={({ isActive }) =>
-            cn(
-              "flex h-24 w-12 items-center justify-center rounded-t-lg px-1 pb-3 pt-4 text-xs tracking-widest text-notebook-cover transition",
-              item.fill,
-              isActive ? "shadow-lg" : "opacity-60 hover:opacity-90"
-            )
-          }
-        >
-          <span style={{ writingMode: "vertical-rl" }}>{item.label}</span>
-        </NavLink>
-      ))}
+    <nav className="flex items-end gap-1.5 pl-3" aria-label="メインメニュー">
+      {ITEMS.map((item) => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              cn(
+                "flex h-28 w-12 flex-col items-center gap-1.5 rounded-t-lg pb-3 pt-3 text-xs text-sticky-foreground transition",
+                item.tone,
+                isActive ? "shadow-lg ring-1 ring-sticky-foreground/25" : "opacity-60 hover:opacity-90"
+              )
+            }
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="tracking-widest" style={{ writingMode: "vertical-rl" }}>
+              {item.label}
+            </span>
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }
