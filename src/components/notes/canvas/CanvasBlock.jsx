@@ -1,5 +1,6 @@
 import React from "react";
 import { GripVertical, Maximize2, MoveVertical, RotateCw, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import CanvasTextBlock from "./CanvasTextBlock";
 import NoteCanvasImage from "./NoteCanvasImage";
 import { inkColor, markerClipPath, markerHeight, stampSize } from "@/lib/notebookCanvas";
@@ -11,6 +12,7 @@ export default function CanvasBlock({
   block,
   selected,
   onSelect,
+  onPressStart,
   onChange,
   onDelete,
   onMoveStart,
@@ -23,14 +25,19 @@ export default function CanvasBlock({
 
   return (
     <div
-      className={selected ? "absolute rounded-md ring-2 ring-accent/60" : "absolute"}
+      className={cn(
+        "absolute",
+        // 長押しドラッグでの移動中に画面がスクロールしないようにする
+        block.type !== "image" && "touch-none",
+        selected && "rounded-md ring-2 ring-accent/60"
+      )}
       style={{
         left: `${block.x}px`,
         top: `${block.y}px`,
         ...(block.width ? { width: `${block.width}px` } : {}),
         ...(block.angle ? { transform: `rotate(${block.angle}deg)` } : {})
       }}
-      onPointerDown={onSelect}
+      onPointerDown={onPressStart}
     >
       {block.type === "text" && (
         <CanvasTextBlock

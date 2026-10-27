@@ -10,19 +10,27 @@ import {
   PAPER_WIDTH,
   STAMP_SIZE,
   clamp,
-  normalizeAngle,
-  stampSize
+  movedBlockPosition,
+  normalizeAngle
 } from "@/lib/notebookCanvas";
+import { startLongPressDrag } from "@/lib/longPressDrag";
 
 export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onUpdate, onDelete }) {
   const surfaceRef = useRef(null);
+  // 移動の直後に起きるクリックで新しい枠が作られないようにする
+  const suppressClickUntil = useRef(0);
 
   const surfaceWidth = () => {
     const el = surfaceRef.current;
     return el ? el.getBoundingClientRect().width : PAPER_WIDTH;
   };
 
+  const suppressClick = () => {
+    suppressClickUntil.current = Date.now() + 300;
+  };
+
   const handleSurfaceClick = (event) => {
+    if (Date.now() < suppressClickUntil.current) return;
     if (event.target !== event.currentTarget) return;
     const rect = surfaceRef.current.getBoundingClientRect();
     onCreate({ x: event.clientX - rect.left, y: event.clientY - rect.top, surfaceWidth: rect.width });
@@ -34,8 +42,6 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
     const startX = event.clientX;
     const startY = event.clientY;
     const width = surfaceWidth();
-    // スタンプは固有の幅を持たないので、文字の大きさを目安にする
-    const spanWidth = block.width || (block.type === "stamp" ? stampSize(block) : 0);
 
     // 回転はブロックの中心を軸にする（回転しても中心は動かない）
     const box = event.currentTarget?.parentElement?.getBoundingClientRect();
@@ -54,10 +60,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
         return;
       }
       if (mode === "move") {
-        onUpdate(block.id, {
-          x: Math.round(clamp(block.x + dx, 0, Math.max(width - spanWidth, 0))),
-          y: Math.round(clamp(block.y + dy, 0, PAPER_HEIGHT - 44))
-        });
+        onUpdate(block.id, movedBlockPosition(block, dx, dy, width));
         return;
       }
       if (mode === "height") {
@@ -84,15 +87,32 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
     const end = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
+      suppressClick();
     };
 
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
   };
 
+  // 長押ししたままドラッグすると移動できる
+  const handlePress = (event, block) => {
+    onSelect(block.id);
+    if (block.type === "image") return;
+
+    startLongPressDrag(event, {
+      onActivate: () => {
+        const active = document.activeElement;
+        if (active && active.tagName === "TEXTAREA" && active.value.trim()) active.blur();
+      },
+      onDrag: (dx, dy) => onUpdate(block.id, movedBlockPosition(block, dx, dy, surfaceWidth())),
+      onEnd: suppressClick
+    });
+  };
+
   return (
     <div
       ref={surfaceRef}
+      data-canvas-surface=""
       onClick={handleSurfaceClick}
       style={{ height: `${PAPER_HEIGHT}px` }}
       className="notebook-ruled-soft relative w-full cursor-text overflow-hidden bg-card"
@@ -109,6 +129,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
           block={block}
           selected={block.id === selectedId}
           onSelect={() => onSelect(block.id)}
+          onPressStart={(event) => handlePress(event, block)}
           onChange={(patch) => onUpdate(block.id, patch)}
           onDelete={() => onDelete(block.id)}
           onMoveStart={(event) => beginGesture(event, block, "move")}

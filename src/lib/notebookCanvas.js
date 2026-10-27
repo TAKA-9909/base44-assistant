@@ -51,6 +51,8 @@ export const normalizeAngle = (value) => {
   return ((rounded % 360) + 360) % 360;
 };
 
+export const MIN_TEXT_WIDTH = 24;
+
 export const MIN_FONT_SIZE = 10;
 export const MAX_FONT_SIZE = 72;
 
@@ -100,6 +102,15 @@ export const MAX_MARKER_HEIGHT = 160;
 
 export const markerHeight = (block) =>
   clamp(Math.round(block.height || MARKER_HEIGHT), MIN_MARKER_HEIGHT, MAX_MARKER_HEIGHT);
+
+export const blockSpanWidth = (block) =>
+  block.width || (block.type === "stamp" ? stampSize(block) : 0);
+
+// ドラッグ中の移動先（紙の外に出ないように収める）
+export const movedBlockPosition = (block, dx, dy, surfaceWidth) => ({
+  x: Math.round(clamp(block.x + dx, 0, Math.max(surfaceWidth - blockSpanWidth(block), 0))),
+  y: Math.round(clamp(block.y + dy, 0, PAPER_HEIGHT - 44))
+});
 
 // 上下の辺は水平、左右の辺は右に傾いた平行四辺形にする
 export const markerClipPath = (height) => {
