@@ -77,7 +77,7 @@ export default function NoteList({
   };
 
   return (
-    <div className="-mx-5 -mb-10 -mt-10 min-h-[calc(100vh-4rem)] bg-notebook-cover sm:-mb-14 sm:-mt-14">
+    <div className="-mx-5 -mb-10 -mt-10 min-h-[calc(100vh-4rem)] bg-background sm:-mb-14 sm:-mt-14">
       <div className="mx-auto max-w-5xl px-5 pb-16 pt-8">
         <PageNav />
 
