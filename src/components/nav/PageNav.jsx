@@ -24,7 +24,7 @@ export default function PageNav() {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                "group flex h-28 w-9 flex-col items-center justify-center gap-1.5 rounded-t-lg py-3 text-xs text-sticky-foreground transition-all duration-300 ease-out hover:w-12",
+                "group flex h-10 w-12 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-t-lg text-xs text-sticky-foreground transition-all duration-300 ease-out hover:h-28",
                 item.tone,
                 isActive ? "shadow-lg ring-1 ring-sticky-foreground/25" : "opacity-60 hover:opacity-100"
               )
