@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Loader2, RefreshCw, Trash2, Check } from "lucide-react";
 import NoteSummaryPanel from "@/components/notes/NoteSummaryPanel";
-import NoteMemoEditor from "@/components/notes/NoteMemoEditor";
 import CanvasNotePanel from "@/components/notes/CanvasNotePanel";
-import { parseCanvas } from "@/lib/notebookCanvas";
+import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
 export default function NoteDetail() {
@@ -97,7 +96,13 @@ export default function NoteDetail() {
   }
 
   const isManual = note.source === "manual";
-  const canvasLayout = isManual ? parseCanvas(note.content) : null;
+  const canvasLayout = parseCanvas(note.content);
+  // 以前に文章で書いたメモは、キャンバス上のテキストとして引き継ぐ
+  const memoBlocks = canvasLayout
+    ? canvasLayout.blocks
+    : note.content?.trim()
+      ? [{ ...createTextBlock(48, 48, DEFAULT_STYLE, 420), text: note.content }]
+      : [];
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -229,20 +234,7 @@ export default function NoteDetail() {
         )}
 
         <TabsContent value="memo" className="mt-8">
-          {canvasLayout ? (
-            <CanvasNotePanel key={note.id} noteId={note.id} initialBlocks={canvasLayout.blocks} />
-          ) : (
-            <NoteMemoEditor
-              key={note.id}
-              noteId={note.id}
-              initialContent={note.content}
-              placeholder={
-                isManual
-                  ? "ノートの本文です。箇条書きでも文章でも、自由に書き足せます。"
-                  : "講義を聞いて気づいたこと、先生が強調していた点、次回までの課題などを自由に書けます。"
-              }
-            />
-          )}
+          <CanvasNotePanel key={note.id} noteId={note.id} initialBlocks={memoBlocks} />
         </TabsContent>
       </Tabs>
     </div>

@@ -38,6 +38,9 @@ export default function CanvasNotePanel({ noteId, initialBlocks }) {
           </span>
         )}
       </div>
+      <p className="text-center text-xs leading-6 text-muted-foreground">
+        罫線の上をタップすると書き込めます。下のバーでフォント・カラー・サイズを変えられます。
+      </p>
     </div>
   );
 }
