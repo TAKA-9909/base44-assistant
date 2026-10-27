@@ -221,6 +221,29 @@
     height: 48%;
     background-color: hsl(var(--marker) / 0.9);
     clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+    transform-origin: left center;
+    /* タブを押したときにペン先が走るように左から右へ引く */
+    animation: tab-marker-draw 320ms cubic-bezier(0.25, 0.9, 0.3, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tab-trigger[data-state="active"] .tab-label::before {
+      animation: none;
+    }
+  }
+
+  @keyframes tab-marker-draw {
+    from {
+      transform: scaleX(0) skewX(0deg);
+      opacity: 0.35;
+    }
+    60% {
+      opacity: 1;
+    }
+    to {
+      transform: scaleX(1);
+      opacity: 1;
+    }
   }
 
 }
