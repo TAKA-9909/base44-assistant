@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import AudioCapture from "@/components/notes/AudioCapture";
 import NotePaper from "@/components/notes/NotePaper";
+import PageNav from "@/components/nav/PageNav";
 import { formatDate, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
 export default function NewLecture() {
@@ -72,15 +73,11 @@ export default function NewLecture() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link
-        to="/recordings"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        録音一覧に戻る
-      </Link>
+      <div className="-mb-px">
+        <PageNav />
+      </div>
 
-      <NotePaper className="mt-6 overflow-hidden p-0 sm:p-0">
+      <NotePaper className="overflow-hidden p-0 sm:p-0">
         <header className="px-6 pb-6 pt-7 sm:px-8">
           <h1 className="font-display text-3xl leading-tight">講義を録音する</h1>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
