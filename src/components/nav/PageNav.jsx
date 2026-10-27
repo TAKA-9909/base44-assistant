@@ -22,7 +22,8 @@ export default function PageNav() {
   const items = [HOME_ITEM, RECORD_ITEM, writeItem, listItem];
 
   return (
-    <nav className="flex items-end pl-3" aria-label="メインメニュー">
+    // 伸びる分の高さを先に確保しておくので、ホバーしてもページは動かない
+    <nav className="flex h-28 items-end pl-3" aria-label="メインメニュー">
       {items.map((item) => {
         const Icon = item.icon;
         return (
@@ -32,7 +33,7 @@ export default function PageNav() {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                "group flex h-10 w-12 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-t-lg text-xs text-sticky-foreground transition-all duration-300 ease-out hover:h-28",
+                "group flex h-10 w-12 shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-t-lg text-xs text-sticky-foreground transition-all duration-300 ease-out hover:h-28",
                 item.tone,
                 isActive ? "shadow-lg ring-1 ring-sticky-foreground/25" : "opacity-60 hover:opacity-100"
               )
