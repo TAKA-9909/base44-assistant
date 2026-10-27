@@ -1,21 +1,26 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { FileAudio, Home, Mic, PenLine } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { FileAudio, Home, List, Mic, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ホームの付箋タグと同じ色・アイコンで揃える
-const ITEMS = [
-  { to: "/", label: "ホーム", icon: Home, tone: "bg-sticky-4", end: true },
-  { to: "/new", label: "録音する", icon: Mic, tone: "bg-sticky-2" },
-  { to: "/write", label: "ノートを書く", icon: PenLine, tone: "bg-sticky-3" },
-  { to: "/recordings", label: "録音一覧", icon: FileAudio, tone: "bg-sticky-1" }
-];
+const HOME_ITEM = { to: "/", label: "ホーム", icon: Home, tone: "bg-notebook-cover text-notebook-cover-foreground", end: true };
+const RECORD_ITEM = { to: "/new", label: "録音する", icon: Mic, tone: "bg-sticky-2" };
+const WRITE_ITEM = { to: "/write", label: "ノートを書く", icon: PenLine, tone: "bg-sticky-3" };
+
+// 4つ目のタブは一覧の入口。開いている一覧の代わりに、もう一方の一覧を出す
+const RECORDINGS_ITEM = { to: "/recordings", label: "録音一覧", icon: FileAudio, tone: "bg-sticky-1" };
+const NOTES_ITEM = { to: "/notes", label: "ノート一覧", icon: List, tone: "bg-sticky-4" };
 
 // 白いページの上辺に付く、縦書きの付箋タブ
 export default function PageNav() {
+  const { pathname } = useLocation();
+  const listItem = pathname === "/recordings" ? NOTES_ITEM : RECORDINGS_ITEM;
+  const items = [HOME_ITEM, RECORD_ITEM, WRITE_ITEM, listItem];
+
   return (
     <nav className="flex items-end pl-3" aria-label="メインメニュー">
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const Icon = item.icon;
         return (
           <NavLink
