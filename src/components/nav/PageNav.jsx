@@ -24,14 +24,17 @@ export default function PageNav() {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                "flex h-28 w-12 flex-col items-center gap-1.5 rounded-t-lg pb-3 pt-3 text-xs text-sticky-foreground transition",
+                "group flex h-28 w-9 flex-col items-center justify-center gap-1.5 rounded-t-lg py-3 text-xs text-sticky-foreground transition-all duration-300 ease-out hover:w-12",
                 item.tone,
-                isActive ? "shadow-lg ring-1 ring-sticky-foreground/25" : "opacity-60 hover:opacity-90"
+                isActive ? "shadow-lg ring-1 ring-sticky-foreground/25" : "opacity-60 hover:opacity-100"
               )
             }
           >
             <Icon className="h-4 w-4 shrink-0" />
-            <span className="tracking-widest" style={{ writingMode: "vertical-rl" }}>
+            <span
+              className="max-h-0 overflow-hidden tracking-widest opacity-0 transition-all duration-300 ease-out group-hover:max-h-24 group-hover:opacity-100 group-focus-visible:max-h-24 group-focus-visible:opacity-100"
+              style={{ writingMode: "vertical-rl" }}
+            >
               {item.label}
             </span>
           </NavLink>
