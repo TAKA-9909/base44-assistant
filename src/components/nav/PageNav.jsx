@@ -14,7 +14,7 @@ const ITEMS = [
 // 白いページの上辺に付く、縦書きの付箋タブ
 export default function PageNav() {
   return (
-    <nav className="flex items-end gap-1.5 pl-3" aria-label="メインメニュー">
+    <nav className="flex items-end pl-3" aria-label="メインメニュー">
       {ITEMS.map((item) => {
         const Icon = item.icon;
         return (
