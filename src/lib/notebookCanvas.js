@@ -40,7 +40,10 @@ export const COLOR_OPTIONS = [
 export const SYMBOL_OPTIONS = [
   "→", "←", "↑", "↓", "⇒", "⇔",
   "★", "☆", "✓", "☑", "◎", "●",
-  "▲", "▼", "■", "□", "※", "≈"
+  "▲", "▼", "■", "□", "※", "≈",
+  "＋", "－", "±", "×", "÷", "＝",
+  "≠", "＜", "＞", "≤", "≥", "√",
+  "∑", "∫", "∞", "π", "∠", "∴"
 ];
 
 export const DEFAULT_STYLE = { font: "mincho", color: "ink", size: 18 };
