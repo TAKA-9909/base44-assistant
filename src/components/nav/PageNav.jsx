@@ -3,42 +3,30 @@ import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { to: "/", label: "ホーム", bar: "bg-accent", end: true },
-  { to: "/new", label: "録音", bar: "bg-ink-sky" },
-  { to: "/write", label: "ノート書く", bar: "bg-ink-amber" },
-  { to: "/recordings", label: "録音一覧", bar: "bg-ink-orange" }
+  { to: "/", label: "ホーム", fill: "bg-tab-1", end: true },
+  { to: "/new", label: "録音", fill: "bg-tab-2" },
+  { to: "/write", label: "ノート書く", fill: "bg-tab-3" },
+  { to: "/recordings", label: "録音一覧", fill: "bg-tab-4" }
 ];
 
+// 白いページの上辺に付く、縦書きの付箋タブ
 export default function PageNav() {
   return (
-    <nav className="flex flex-wrap items-center gap-x-7 gap-y-3">
+    <nav className="flex items-end gap-1.5 pl-3">
       {ITEMS.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
           end={item.end}
-          className="group flex items-center gap-2.5"
+          className={({ isActive }) =>
+            cn(
+              "flex h-24 w-12 items-center justify-center rounded-t-lg px-1 pb-3 pt-4 text-xs tracking-widest text-notebook-cover transition",
+              item.fill,
+              isActive ? "shadow-lg" : "opacity-60 hover:opacity-90"
+            )
+          }
         >
-          {({ isActive }) => (
-            <>
-              <span
-                className={cn(
-                  "h-6 w-2 rounded-l-sm rounded-r-[2px] shadow-sm transition",
-                  item.bar,
-                  isActive ? "ring-1 ring-notebook-cover-foreground/25" : "opacity-40"
-                )}
-                aria-hidden="true"
-              />
-              <span
-                className={cn(
-                  "text-sm tracking-wide text-notebook-cover-foreground/70 transition group-hover:text-notebook-cover-foreground",
-                  isActive && "font-medium text-notebook-cover-foreground"
-                )}
-              >
-                {item.label}
-              </span>
-            </>
-          )}
+          <span style={{ writingMode: "vertical-rl" }}>{item.label}</span>
         </NavLink>
       ))}
     </nav>

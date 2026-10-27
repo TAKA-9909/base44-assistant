@@ -71,6 +71,12 @@ module.exports = {
   				bar: 'hsl(var(--canvas-bar))',
   				'bar-foreground': 'hsl(var(--canvas-bar-foreground))'
   			},
+  			tab: {
+  				'1': 'hsl(var(--tab-1))',
+  				'2': 'hsl(var(--tab-2))',
+  				'3': 'hsl(var(--tab-3))',
+  				'4': 'hsl(var(--tab-4))'
+  			},
   			sticky: {
   				foreground: 'hsl(var(--sticky-foreground))',
   				'1': 'hsl(var(--sticky-1))',

@@ -81,7 +81,7 @@ export default function NoteList({
       <div className="mx-auto max-w-5xl px-5 pb-16 pt-8">
         <PageNav />
 
-        <div className="notebook-ruled-soft mt-8 rounded-md border border-border bg-card p-4 shadow-xl sm:p-6">
+        <div className="notebook-ruled-soft rounded-md border border-border bg-card p-4 shadow-xl sm:p-6">
           <div className="mb-5 flex items-baseline justify-between gap-4">
             <h1 className="font-display text-lg tracking-wide text-notebook-paper-foreground">
               {title}
