@@ -11,11 +11,24 @@ const ITEMS = [
 
 export default function PageNav() {
   return (
-    <nav className="flex flex-wrap items-start gap-x-8 gap-y-4">
+    <nav className="flex flex-wrap items-center gap-x-7 gap-y-3">
       {ITEMS.map((item) => (
-        <NavLink key={item.to} to={item.to} end={item.end} className="group flex flex-col gap-2">
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          className="group flex items-center gap-2.5"
+        >
           {({ isActive }) => (
             <>
+              <span
+                className={cn(
+                  "h-6 w-2 rounded-l-sm rounded-r-[2px] shadow-sm transition",
+                  item.bar,
+                  isActive ? "ring-1 ring-notebook-cover-foreground/25" : "opacity-40"
+                )}
+                aria-hidden="true"
+              />
               <span
                 className={cn(
                   "text-sm tracking-wide text-notebook-cover-foreground/70 transition group-hover:text-notebook-cover-foreground",
@@ -24,10 +37,6 @@ export default function PageNav() {
               >
                 {item.label}
               </span>
-              <span
-                className={cn("h-1.5 w-12 rounded-full", item.bar, !isActive && "opacity-40")}
-                aria-hidden="true"
-              />
             </>
           )}
         </NavLink>
