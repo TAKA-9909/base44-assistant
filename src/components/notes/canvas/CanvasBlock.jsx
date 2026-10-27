@@ -73,7 +73,8 @@ export default function CanvasBlock({
       {block.type === "stamp" && (
         <div
           className="select-none leading-none"
-          style={{ fontSize: `${stampPx}px`, color: inkColor(block.color) }}
+          // 小さく縮めたシンボルも長押ししやすいよう、見た目を変えずに当たり判定だけ広げる
+          style={{ fontSize: `${stampPx}px`, color: inkColor(block.color), padding: "8px", margin: "-8px" }}
         >
           {block.symbol}
         </div>
@@ -81,31 +82,34 @@ export default function CanvasBlock({
 
       {selected && (
         <>
-          <button
-            type="button"
-            aria-label="移動"
-            onPointerDown={onMoveStart}
-            className={`${HANDLE} absolute -top-8 left-0 cursor-grab touch-none`}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="削除"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={onDelete}
-            className={`${HANDLE} absolute -top-8 left-8`}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="回転"
-            onPointerDown={onRotateStart}
-            className={`${HANDLE} absolute -top-8 right-0 cursor-grab touch-none`}
-          >
-            <RotateCw className="h-3.5 w-3.5" />
-          </button>
+          {/* 小さなシンボルでも重ならないよう、3つのボタンを横一列に並べる */}
+          <div className="absolute -top-9 left-0 flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="移動"
+              onPointerDown={onMoveStart}
+              className={`${HANDLE} cursor-grab touch-none`}
+            >
+              <GripVertical className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label="削除"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={onDelete}
+              className={HANDLE}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label="回転"
+              onPointerDown={onRotateStart}
+              className={`${HANDLE} cursor-grab touch-none`}
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+            </button>
+          </div>
           {block.type !== "text" && (
             <button
               type="button"
