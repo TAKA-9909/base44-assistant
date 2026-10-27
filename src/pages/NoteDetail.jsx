@@ -122,130 +122,128 @@ export default function NoteDetail() {
         {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
       </Link>
 
-      <header className="mt-6 flex flex-wrap items-start justify-between gap-6">
-        <div className="min-w-[220px] flex-1">
-          {note.course && (
-            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-              {note.course}
-            </span>
+      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-5">
+        <NotePaper className="overflow-hidden p-0 sm:p-0">
+          <header className="px-6 pb-6 pt-7 sm:px-8">
+            <div className="flex flex-wrap items-start justify-between gap-6">
+              <div className="min-w-[220px] flex-1">
+                {note.course && (
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                    {note.course}
+                  </span>
+                )}
+                <h1 className="mt-3 font-display text-3xl leading-tight">{note.title}</h1>
+                <p className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  {note.lecture_date && <span>{formatDate(note.lecture_date)}</span>}
+                  {note.duration_seconds > 0 && <span>{formatDuration(note.duration_seconds)}</span>}
+                  <span>
+                    {note.source === "upload"
+                      ? "ファイル読み込み"
+                      : note.source === "manual"
+                        ? "自分で書いたノート"
+                        : "その場で録音"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {note.audio_url ? (
+                  <AudioPlayer src={note.audio_url}>
+                    <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
+                  </AudioPlayer>
+                ) : (
+                  <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
+                )}
+              </div>
+            </div>
+          </header>
+
+          <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>このノートを削除しますか？</AlertDialogTitle>
+                <AlertDialogDescription>
+                  文字起こしとメモを含め、すべて削除されます。元に戻せません。
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>削除する</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {note.status === "processing" && (
+            <div className="mx-6 mb-5 flex items-center gap-3 rounded-2xl bg-secondary px-5 py-4 text-sm sm:mx-8">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              文字起こしとノートを作成しています。少しお待ちください。
+            </div>
           )}
-          <h1 className="mt-3 font-display text-3xl leading-tight">{note.title}</h1>
-          <p className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            {note.lecture_date && <span>{formatDate(note.lecture_date)}</span>}
-            {note.duration_seconds > 0 && <span>{formatDuration(note.duration_seconds)}</span>}
-            <span>
-              {note.source === "upload"
-                ? "ファイル読み込み"
-                : note.source === "manual"
-                  ? "自分で書いたノート"
-                  : "その場で録音"}
-            </span>
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          {note.audio_url ? (
-            <AudioPlayer src={note.audio_url}>
-              <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
-            </AudioPlayer>
-          ) : (
-            <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
-          )}
-        </div>
-      </header>
-
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>このノートを削除しますか？</AlertDialogTitle>
-            <AlertDialogDescription>
-              文字起こしとメモを含め、すべて削除されます。元に戻せません。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>削除する</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {note.status === "processing" && (
-        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-secondary px-5 py-4 text-sm">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          文字起こしとノートを作成しています。少しお待ちください。
-        </div>
-      )}
-
-      {note.status === "failed" && (
-        <div className="mt-6 rounded-2xl bg-destructive/10 px-5 py-4">
-          <p className="text-sm text-destructive">
-            {note.error_message || "ノートを作成できませんでした。"}
-          </p>
-          <Button
-            onClick={handleRetry}
-            disabled={retrying}
-            variant="outline"
-            size="sm"
-            className="mt-3 rounded-full"
-          >
-            {retrying ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-            )}
-            もう一度ノート化する
-          </Button>
-        </div>
-      )}
-
-      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-10">
-        <TabsList className="h-auto flex-wrap gap-1 rounded-2xl bg-secondary/70 p-1.5">
-          {!isManual && (
-            <TabsTrigger value="summary" className={TAB_TRIGGER}>
-              まとめ
-            </TabsTrigger>
-          )}
-          {!isManual && (
-            <TabsTrigger value="transcript" className={TAB_TRIGGER}>
-              文字起こし
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="memo" className={TAB_TRIGGER}>
-            {isManual ? "ノート本文" : "自分のメモ"}
-          </TabsTrigger>
-        </TabsList>
-
-        {!isManual && (
-          <TabsContent value="summary" className="mt-5">
-            <NotePaper>
-              <NoteSummaryPanel note={note} />
-            </NotePaper>
-          </TabsContent>
-        )}
-
-        {!isManual && (
-        <TabsContent value="transcript" className="mt-5">
-          {note.transcript ? (
-            <NotePaper className="space-y-4">
-              <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8">
-                {note.transcript}
+          {note.status === "failed" && (
+            <div className="mx-6 mb-5 rounded-2xl bg-destructive/10 px-5 py-4 sm:mx-8">
+              <p className="text-sm text-destructive">
+                {note.error_message || "ノートを作成できませんでした。"}
               </p>
-              <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
-                {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}
-                {copied ? "コピーしました" : "文字起こしをコピー"}
+              <Button
+                onClick={handleRetry}
+                disabled={retrying}
+                variant="outline"
+                size="sm"
+                className="mt-3 rounded-full"
+              >
+                {retrying ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                もう一度ノート化する
               </Button>
-            </NotePaper>
-          ) : (
-            <NotePaper>
-              <p className="text-sm text-muted-foreground">まだ文字起こしがありません。</p>
-            </NotePaper>
+            </div>
           )}
-        </TabsContent>
-        )}
 
-        <TabsContent value="memo" className="mt-5">
-          <CanvasNotePanel key={note.id} noteId={note.id} initialBlocks={memoBlocks} />
-        </TabsContent>
+          <div className="border-t border-border/70 px-6 py-3.5 sm:px-8">
+            <TabsList className="h-auto flex-wrap gap-1 rounded-2xl bg-secondary/70 p-1.5">
+              {!isManual && (
+                <TabsTrigger value="summary" className={TAB_TRIGGER}>
+                  まとめ
+                </TabsTrigger>
+              )}
+              {!isManual && (
+                <TabsTrigger value="transcript" className={TAB_TRIGGER}>
+                  文字起こし
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="memo" className={TAB_TRIGGER}>
+                {isManual ? "ノート本文" : "自分のメモ"}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="summary" className="px-6 py-7 sm:px-8">
+            <NoteSummaryPanel note={note} />
+          </TabsContent>
+
+          <TabsContent value="transcript" className="px-6 py-7 sm:px-8">
+            {note.transcript ? (
+              <div className="space-y-4">
+                <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8">
+                  {note.transcript}
+                </p>
+                <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
+                  {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}
+                  {copied ? "コピーしました" : "文字起こしをコピー"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">まだ文字起こしがありません。</p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="memo" className="px-6 py-7 sm:px-8">
+            <CanvasNotePanel key={note.id} noteId={note.id} initialBlocks={memoBlocks} />
+          </TabsContent>
+        </NotePaper>
       </Tabs>
     </div>
   );
