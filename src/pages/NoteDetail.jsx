@@ -14,11 +14,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Loader2, RefreshCw, Trash2, Check } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, Check } from "lucide-react";
 import NoteSummaryPanel from "@/components/notes/NoteSummaryPanel";
 import CanvasNotePanel from "@/components/notes/CanvasNotePanel";
+import AudioPlayer from "@/components/notes/AudioPlayer";
+import NoteMenuButton from "@/components/notes/NoteMenuButton";
+import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
+
+// 選択中のタブだけ白いピルにする
+const TAB_TRIGGER =
+  "rounded-xl px-5 py-2 text-sm data-[state=active]:border data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:shadow-sm";
 
 export default function NoteDetail() {
   const { id } = useParams();
@@ -28,6 +35,7 @@ export default function NoteDetail() {
   const [missing, setMissing] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const load = async () => {
     try {
@@ -114,8 +122,8 @@ export default function NoteDetail() {
         {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
       </Link>
 
-      <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-xl">
+      <header className="mt-6 flex flex-wrap items-start justify-between gap-6">
+        <div className="min-w-[220px] flex-1">
           {note.course && (
             <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {note.course}
@@ -135,33 +143,31 @@ export default function NoteDetail() {
           </p>
         </div>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              削除
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>このノートを削除しますか？</AlertDialogTitle>
-              <AlertDialogDescription>
-                文字起こしとメモを含め、すべて削除されます。元に戻せません。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>キャンセル</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>削除する</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-
-      {note.audio_url && (
-        <div className="mt-8 rounded-3xl border border-border/70 bg-card p-4">
-          <audio controls src={note.audio_url} className="w-full" />
+        <div className="flex items-center gap-2">
+          {note.audio_url ? (
+            <AudioPlayer src={note.audio_url}>
+              <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
+            </AudioPlayer>
+          ) : (
+            <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
+          )}
         </div>
-      )}
+      </header>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>このノートを削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              文字起こしとメモを含め、すべて削除されます。元に戻せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>削除する</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {note.status === "processing" && (
         <div className="mt-6 flex items-center gap-3 rounded-2xl bg-secondary px-5 py-4 text-sm">
@@ -193,47 +199,51 @@ export default function NoteDetail() {
       )}
 
       <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-10">
-        <TabsList className="rounded-full">
+        <TabsList className="h-auto flex-wrap gap-1 rounded-2xl bg-secondary/70 p-1.5">
           {!isManual && (
-            <TabsTrigger value="summary" className="rounded-full px-5">
+            <TabsTrigger value="summary" className={TAB_TRIGGER}>
               まとめ
             </TabsTrigger>
           )}
           {!isManual && (
-            <TabsTrigger value="transcript" className="rounded-full px-5">
+            <TabsTrigger value="transcript" className={TAB_TRIGGER}>
               文字起こし
             </TabsTrigger>
           )}
-          <TabsTrigger value="memo" className="rounded-full px-5">
+          <TabsTrigger value="memo" className={TAB_TRIGGER}>
             {isManual ? "ノート本文" : "自分のメモ"}
           </TabsTrigger>
         </TabsList>
 
         {!isManual && (
-          <TabsContent value="summary" className="mt-8">
-            <NoteSummaryPanel note={note} />
+          <TabsContent value="summary" className="mt-5">
+            <NotePaper>
+              <NoteSummaryPanel note={note} />
+            </NotePaper>
           </TabsContent>
         )}
 
         {!isManual && (
-        <TabsContent value="transcript" className="mt-8">
+        <TabsContent value="transcript" className="mt-5">
           {note.transcript ? (
-            <div className="space-y-4">
-              <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap rounded-3xl border border-border/70 bg-card p-6 text-[15px] leading-8">
+            <NotePaper className="space-y-4">
+              <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8">
                 {note.transcript}
               </p>
               <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
                 {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}
                 {copied ? "コピーしました" : "文字起こしをコピー"}
               </Button>
-            </div>
+            </NotePaper>
           ) : (
-            <p className="text-sm text-muted-foreground">まだ文字起こしがありません。</p>
+            <NotePaper>
+              <p className="text-sm text-muted-foreground">まだ文字起こしがありません。</p>
+            </NotePaper>
           )}
         </TabsContent>
         )}
 
-        <TabsContent value="memo" className="mt-8">
+        <TabsContent value="memo" className="mt-5">
           <CanvasNotePanel key={note.id} noteId={note.id} initialBlocks={memoBlocks} />
         </TabsContent>
       </Tabs>
