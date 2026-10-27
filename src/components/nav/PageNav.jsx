@@ -15,11 +15,11 @@ const NOTES_ITEM = { to: "/notes", label: "ノート一覧", icon: List, tone: "
 // 白いページの上辺に付く、縦書きの付箋タブ
 export default function PageNav() {
   const { pathname } = useLocation();
-  const isWrite = pathname === "/write";
   // 開いているページのタブの代わりに、移動できる一覧を出す
-  const writeItem = isWrite ? NOTES_ITEM : WRITE_ITEM;
+  const recordItem = pathname === "/new" ? NOTES_ITEM : RECORD_ITEM;
+  const writeItem = pathname === "/write" ? NOTES_ITEM : WRITE_ITEM;
   const listItem = pathname === "/recordings" ? NOTES_ITEM : RECORDINGS_ITEM;
-  const items = [HOME_ITEM, RECORD_ITEM, writeItem, listItem];
+  const items = [HOME_ITEM, recordItem, writeItem, listItem];
 
   return (
     // 伸びる分の高さを先に確保しておくので、ホバーしてもページは動かない
