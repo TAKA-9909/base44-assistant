@@ -50,8 +50,8 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
       <span
         ref={mirrorRef}
         aria-hidden="true"
-        className="pointer-events-none absolute w-max select-none whitespace-pre text-transparent"
-        style={textStyle}
+        className="pointer-events-none absolute left-0 top-0 w-max select-none whitespace-pre"
+        style={{ ...textStyle, color: "transparent" }}
       >
         {block.text}
       </span>
