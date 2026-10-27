@@ -21,6 +21,7 @@ import AudioPlayer from "@/components/notes/AudioPlayer";
 import NoteMenuButton from "@/components/notes/NoteMenuButton";
 import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
+import { cn } from "@/lib/utils";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
 // 選択中のタブだけ白いピルにする
@@ -114,15 +115,23 @@ export default function NoteDetail() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link
-        to={isManual ? "/notes" : "/recordings"}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
-      </Link>
+      <div className="mt-5 flex pl-3">
+        <Link
+          to={isManual ? "/notes" : "/recordings"}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-[6px] px-3.5 py-2 text-xs font-medium text-sticky-foreground shadow-[0_3px_6px_-2px_hsl(var(--notebook-paper-foreground)/0.4)] transition hover:-translate-y-0.5",
+            isManual ? "bg-sticky-4" : "bg-sticky-1",
+            "-rotate-1"
+          )}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span className="whitespace-nowrap">
+            {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
+          </span>
+        </Link>
+      </div>
 
-      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-5">
+      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-1">
         <NotePaper className="overflow-hidden p-0 sm:p-0">
           <header className="px-6 pb-6 pt-7 sm:px-8">
             <div className="flex flex-wrap items-start justify-between gap-6">
