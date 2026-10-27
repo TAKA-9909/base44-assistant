@@ -223,16 +223,22 @@ export default function NoteDetail() {
             <TabsList className="h-auto flex-wrap gap-1 rounded-2xl bg-secondary/70 p-1.5">
               {!isManual && (
                 <TabsTrigger value="summary" className={TAB_TRIGGER}>
-                  <span className="tab-label">まとめ</span>
+                  <span className="tab-label">
+                    <span className="tab-label-text">まとめ</span>
+                  </span>
                 </TabsTrigger>
               )}
               {!isManual && (
                 <TabsTrigger value="transcript" className={TAB_TRIGGER}>
-                  <span className="tab-label">文字起こし</span>
+                  <span className="tab-label">
+                    <span className="tab-label-text">文字起こし</span>
+                  </span>
                 </TabsTrigger>
               )}
               <TabsTrigger value="memo" className={TAB_TRIGGER}>
-                <span className="tab-label">{isManual ? "ノート本文" : "自分のメモ"}</span>
+                <span className="tab-label">
+                  <span className="tab-label-text">{isManual ? "ノート本文" : "自分のメモ"}</span>
+                </span>
               </TabsTrigger>
             </TabsList>
           </div>

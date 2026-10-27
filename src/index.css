@@ -201,15 +201,26 @@
 
   /* タブのラベル（選択中は蛍光ペンの帯で囲む） */
   .tab-label {
-    padding: 1px 6px;
-    border-radius: 3px;
+    position: relative;
+    display: inline-block;
+    padding: 1px 8px;
   }
 
-  .tab-trigger[data-state="active"] .tab-label {
-    background-image: linear-gradient(hsl(var(--marker) / 0.9), hsl(var(--marker) / 0.9));
-    background-repeat: no-repeat;
-    background-size: 100% 58%;
-    background-position: 0 80%;
+  .tab-label-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 帯は左右の辺を右に傾けた平行四辺形にする */
+  .tab-trigger[data-state="active"] .tab-label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 16%;
+    height: 48%;
+    background-color: hsl(var(--marker) / 0.9);
+    clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
   }
 
 }
