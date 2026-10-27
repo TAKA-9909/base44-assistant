@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Loader2, RefreshCw, Check } from "lucide-react";
+import { Check, FileAudio, List, Loader2, RefreshCw } from "lucide-react";
 import NoteSummaryPanel from "@/components/notes/NoteSummaryPanel";
 import CanvasNotePanel from "@/components/notes/CanvasNotePanel";
 import AudioPlayer from "@/components/notes/AudioPlayer";
@@ -113,25 +113,33 @@ export default function NoteDetail() {
       ? [{ ...createTextBlock(48, 48, DEFAULT_STYLE, 420), text: note.content }]
       : [];
 
+  // 戻るタグは他のページの付箋タブと同じ色とアイコンに揃える
+  const backItem = isManual
+    ? { to: "/notes", label: "ノート一覧", icon: List, tone: "bg-sticky-4" }
+    : { to: "/recordings", label: "録音一覧", icon: FileAudio, tone: "bg-sticky-1" };
+  const BackIcon = backItem.icon;
+
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mt-5 flex pl-3">
+      <nav className="flex h-28 items-end pl-3" aria-label="戻る">
         <Link
-          to={isManual ? "/notes" : "/recordings"}
+          to={backItem.to}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-[6px] px-3.5 py-2 text-xs font-medium text-sticky-foreground shadow-[0_3px_6px_-2px_hsl(var(--notebook-paper-foreground)/0.4)] transition hover:-translate-y-0.5",
-            isManual ? "bg-sticky-4" : "bg-sticky-1",
-            "-rotate-1"
+            "group flex h-10 w-12 shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-t-lg text-xs text-sticky-foreground shadow-lg ring-1 ring-sticky-foreground/25 transition-all duration-300 ease-out hover:h-28",
+            backItem.tone
           )}
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span className="whitespace-nowrap">
-            {isManual ? "ノート一覧に戻る" : "録音一覧に戻る"}
+          <BackIcon className="h-4 w-4 shrink-0" />
+          <span
+            className="max-h-0 overflow-hidden tracking-widest opacity-0 transition-all duration-300 ease-out group-hover:max-h-24 group-hover:opacity-100 group-focus-visible:max-h-24 group-focus-visible:opacity-100"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            {backItem.label}
           </span>
         </Link>
-      </div>
+      </nav>
 
-      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-1">
+      <Tabs defaultValue={isManual ? "memo" : "summary"} className="mt-0">
         <NotePaper className="overflow-hidden p-0 sm:p-0">
           <header className="px-6 pb-6 pt-7 sm:px-8">
             <div className="flex flex-wrap items-start justify-between gap-6">
