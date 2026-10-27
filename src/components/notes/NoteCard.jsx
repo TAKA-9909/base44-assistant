@@ -15,9 +15,9 @@ export default function NoteCard({ note }) {
   return (
     <Link
       to={`/notes/${note.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-notebook-label p-5 pl-8 shadow-sm transition hover:border-accent/40 hover:shadow-md"
+      className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card p-5 pl-6 shadow-sm transition hover:border-accent/40 hover:shadow-md"
     >
-      <span className="absolute inset-y-0 left-3.5 w-px bg-accent/50" aria-hidden="true" />
+      <span className="absolute inset-y-0 left-0 w-1 bg-accent" aria-hidden="true" />
       <div className="mb-3 flex items-center gap-2">
         {note.course && (
           <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
@@ -38,7 +38,7 @@ export default function NoteCard({ note }) {
         )}
       </div>
 
-      <h3 className="font-display text-lg leading-snug transition group-hover:text-primary">
+      <h3 className="font-display text-lg leading-snug text-notebook-paper-foreground transition group-hover:text-primary">
         {note.title}
       </h3>
 

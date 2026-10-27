@@ -44,6 +44,18 @@ module.exports = {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
+  			ink: {
+  				gray: 'hsl(var(--ink-gray))',
+  				blue: 'hsl(var(--ink-blue))',
+  				sky: 'hsl(var(--ink-sky))',
+  				teal: 'hsl(var(--ink-teal))',
+  				green: 'hsl(var(--ink-green))',
+  				amber: 'hsl(var(--ink-amber))',
+  				orange: 'hsl(var(--ink-orange))',
+  				brown: 'hsl(var(--ink-brown))',
+  				pink: 'hsl(var(--ink-pink))',
+  				purple: 'hsl(var(--ink-purple))'
+  			},
   			notebook: {
   				cover: 'hsl(var(--notebook-cover))',
   				'cover-foreground': 'hsl(var(--notebook-cover-foreground))',
