@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, PenLine } from "lucide-react";
+import { Loader2, PenLine } from "lucide-react";
 import CanvasEditor from "@/components/notes/canvas/CanvasEditor";
 import PageNav from "@/components/nav/PageNav";
 import { serializeCanvas } from "@/lib/notebookCanvas";
@@ -43,14 +43,7 @@ export default function NewNote() {
   return (
     <div className="-mx-5 -mb-10 -mt-10 min-h-[calc(100vh-4rem)] bg-background sm:-mb-14 sm:-mt-14">
       <div className="mx-auto max-w-4xl px-5 pb-16 pt-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link
-            to="/notes"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            ノート一覧に戻る
-          </Link>
+        <div className="flex flex-wrap items-center justify-end gap-4">
           <Button onClick={handleSave} disabled={saving} className="h-11 rounded-full px-6">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PenLine className="mr-2 h-4 w-4" />}
             保存する
