@@ -1,24 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import { isMarked, splitSentences, toggleMark } from "@/lib/sentenceMarks";
+import { selectionOffsets, splitByRanges, toggleRange } from "@/lib/highlightRanges";
 import { MIN_TEXT_WIDTH, fontPixels, fontStack, inkColor } from "@/lib/notebookCanvas";
-
-const TAP_MS = 350;
-const TAP_MOVE = 6;
 
 export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onWidth }) {
   const ref = useRef(null);
+  const viewRef = useRef(null);
   const mirrorRef = useRef(null);
-  const pressRef = useRef(null);
-  // 文章があるときは読み取り表示（文を押すとマーカー）で、ダブルタップすると書き込みに戻る
+  // 文章があるときは読み取り表示（なぞった範囲にマーカー）で、ダブルタップすると書き込みに戻る
   const [editing, setEditing] = useState(!block.text);
 
   useEffect(() => {
-    const el = ref.current;
+    const el = ref.current || viewRef.current;
     const mirror = mirrorRef.current;
     if (!el || !mirror) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
+    if (ref.current) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
 
     const surface = el.closest("[data-canvas-surface]");
     const surfaceWidth = surface
@@ -45,15 +43,12 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
     color: inkColor(block.color)
   };
 
-  // 軽く押したときだけマーカーを引く（長押し移動やドラッグのときは引かない）
-  const handleSentenceClick = (event, sentence) => {
-    const press = pressRef.current;
-    pressRef.current = null;
-    if (!press) return;
-    const moved =
-      Math.abs(event.clientX - press.x) > TAP_MOVE || Math.abs(event.clientY - press.y) > TAP_MOVE;
-    if (moved || Date.now() - press.time > TAP_MS) return;
-    onChange({ marks: toggleMark(block.marks, sentence) });
+  // なぞって選んだ範囲にマーカーを引く（もう一度なぞると消える）
+  const handleSelectionEnd = () => {
+    const offsets = selectionOffsets(viewRef.current);
+    if (!offsets) return;
+    window.getSelection()?.removeAllRanges();
+    onChange({ marks: toggleRange(block.marks, undefined, offsets.start, offsets.end) });
   };
 
   return (
@@ -76,27 +71,19 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
         />
       ) : (
         <div
-          onPointerDown={(event) =>
-            (pressRef.current = { x: event.clientX, y: event.clientY, time: Date.now() })
-          }
+          ref={viewRef}
+          onPointerUp={handleSelectionEnd}
           onDoubleClick={() => setEditing(true)}
-          className="w-full whitespace-pre-wrap break-words"
+          className="w-full select-text whitespace-pre-wrap break-words"
           style={textStyle}
         >
-          {splitSentences(block.text).map((sentence, index) =>
-            sentence === "\n" ? (
-              <br key={`br-${index}`} />
-            ) : (
-              <span
-                key={`${index}-${sentence}`}
-                onClick={(event) => handleSentenceClick(event, sentence)}
-                className={cn(
-                  "cursor-pointer",
-                  isMarked(block.marks, sentence) ? "marker-ink" : "marker-target"
-                )}
-              >
-                {sentence}
+          {splitByRanges(block.text, block.marks).map((segment, index) =>
+            segment.marked ? (
+              <span key={index} className="marker-ink">
+                {segment.text}
               </span>
+            ) : (
+              <React.Fragment key={index}>{segment.text}</React.Fragment>
             )
           )}
         </div>

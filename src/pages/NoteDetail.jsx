@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,7 @@ import AudioPlayer from "@/components/notes/AudioPlayer";
 import NoteMenuButton from "@/components/notes/NoteMenuButton";
 import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
-import SentenceText from "@/components/notes/SentenceText";
-import { toggleMark } from "@/lib/sentenceMarks";
+import MarkedText from "@/components/notes/MarkedText";
 import { cn } from "@/lib/utils";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
@@ -40,14 +39,12 @@ export default function NoteDetail() {
   const [copied, setCopied] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [highlights, setHighlights] = useState([]);
-  const highlightsRef = useRef([]);
 
   const load = async () => {
     try {
       const data = await base44.entities.LectureNote.get(id);
       setNote(data);
-      highlightsRef.current = data.highlights || [];
-      setHighlights(highlightsRef.current);
+      setHighlights(data.highlights || []);
     } catch {
       setMissing(true);
     } finally {
@@ -91,10 +88,8 @@ export default function NoteDetail() {
     setTimeout(() => setCopied(false), 2500);
   };
 
-  // 押された一文にマーカーを引いて保存する
-  const handleToggleHighlight = async (key) => {
-    const next = toggleMark(highlightsRef.current, key);
-    highlightsRef.current = next;
+  // 選んだ範囲にマーカーを引いて保存する
+  const handleMarks = async (next) => {
     setHighlights(next);
     await base44.entities.LectureNote.update(id, { highlights: next });
   };
@@ -252,20 +247,21 @@ export default function NoteDetail() {
           </div>
 
           <TabsContent value="summary" className="px-6 py-7 sm:px-8">
-            <NoteSummaryPanel note={note} marks={highlights} onToggle={handleToggleHighlight} />
+            <NoteSummaryPanel note={note} marks={highlights} onMark={handleMarks} />
           </TabsContent>
 
           <TabsContent value="transcript" className="px-6 py-7 sm:px-8">
             {note.transcript ? (
               <div className="space-y-4">
-                <p className="max-h-[560px] overflow-y-auto text-[15px] leading-8">
-                  <SentenceText
+                <div className="max-h-[560px] overflow-y-auto">
+                  <MarkedText
                     text={note.transcript}
-                    prefix="transcript|"
+                    field="transcript"
                     marks={highlights}
-                    onToggle={handleToggleHighlight}
+                    onMark={handleMarks}
+                    className="text-[15px] leading-8 whitespace-pre-wrap"
                   />
-                </p>
+                </div>
                 <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
                   {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}
                   {copied ? "コピーしました" : "文字起こしをコピー"}

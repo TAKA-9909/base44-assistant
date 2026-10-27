@@ -208,12 +208,4 @@
     border-radius: 2px;
   }
 
-  .marker-target {
-    border-radius: 2px;
-    transition: background-color 0.15s ease-out;
-  }
-
-  .marker-target:hover {
-    background-color: hsl(var(--marker) / 0.28);
-  }
 }

@@ -39,7 +39,7 @@ export default function CanvasNotePanel({ noteId, initialBlocks }) {
         )}
       </div>
       <p className="text-center text-xs leading-6 text-muted-foreground">
-        罫線の上をタップすると書き込めます。文章を押すとマーカーが引かれ、ダブルタップで書き直せます。
+        罫線の上をタップすると書き込めます。文章をなぞるとマーカーが引かれ、ダブルタップで書き直せます。
       </p>
     </div>
   );

@@ -1,11 +1,11 @@
 import React from "react";
-import SentenceText from "@/components/notes/SentenceText";
+import MarkedText from "@/components/notes/MarkedText";
 
 const SectionTitle = ({ children }) => (
   <h3 className="mb-4 font-display text-base tracking-wide text-foreground">{children}</h3>
 );
 
-export default function NoteSummaryPanel({ note, marks, onToggle }) {
+export default function NoteSummaryPanel({ note, marks, onMark }) {
   const hasContent =
     note.summary || note.key_points?.length || note.outline?.length || note.terms?.length;
 
@@ -19,7 +19,7 @@ export default function NoteSummaryPanel({ note, marks, onToggle }) {
         <section>
           <SectionTitle>要約</SectionTitle>
           <p className="text-[15px] leading-8 text-foreground/90">
-            <SentenceText text={note.summary} prefix="summary|" marks={marks} onToggle={onToggle} />
+            <MarkedText text={note.summary} field="summary" marks={marks} onMark={onMark} />
           </p>
         </section>
       )}
@@ -34,7 +34,12 @@ export default function NoteSummaryPanel({ note, marks, onToggle }) {
                   {index + 1}
                 </span>
                 <span className="text-foreground/90">
-                  <SentenceText text={point} prefix="summary|" marks={marks} onToggle={onToggle} />
+                  <MarkedText
+                    text={point}
+                    field={`key_points.${index}`}
+                    marks={marks}
+                    onMark={onMark}
+                  />
                 </span>
               </li>
             ))}
@@ -49,13 +54,23 @@ export default function NoteSummaryPanel({ note, marks, onToggle }) {
             {note.outline.map((block, index) => (
               <div key={index} className="border-l-2 border-border pl-5">
                 <p className="mb-2 font-medium">
-                  <SentenceText text={block.heading} prefix="summary|" marks={marks} onToggle={onToggle} />
+                  <MarkedText
+                    text={block.heading}
+                    field={`outline.${index}.heading`}
+                    marks={marks}
+                    onMark={onMark}
+                  />
                 </p>
                 <ul className="space-y-1.5 text-sm leading-7 text-muted-foreground">
                   {(block.points || []).map((point, pointIndex) => (
                     <li key={pointIndex}>
                       ・
-                      <SentenceText text={point} prefix="summary|" marks={marks} onToggle={onToggle} />
+                      <MarkedText
+                        text={point}
+                        field={`outline.${index}.points.${pointIndex}`}
+                        marks={marks}
+                        onMark={onMark}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -72,10 +87,20 @@ export default function NoteSummaryPanel({ note, marks, onToggle }) {
             {note.terms.map((item, index) => (
               <div key={index} className="rounded-2xl border border-border/70 bg-card p-4">
                 <dt className="text-sm font-medium">
-                  <SentenceText text={item.term} prefix="summary|" marks={marks} onToggle={onToggle} />
+                  <MarkedText
+                    text={item.term}
+                    field={`terms.${index}.term`}
+                    marks={marks}
+                    onMark={onMark}
+                  />
                 </dt>
                 <dd className="mt-1 text-sm leading-6 text-muted-foreground">
-                  <SentenceText text={item.meaning} prefix="summary|" marks={marks} onToggle={onToggle} />
+                  <MarkedText
+                    text={item.meaning}
+                    field={`terms.${index}.meaning`}
+                    marks={marks}
+                    onMark={onMark}
+                  />
                 </dd>
               </div>
             ))}
