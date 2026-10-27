@@ -21,13 +21,12 @@ import AudioPlayer from "@/components/notes/AudioPlayer";
 import NoteMenuButton from "@/components/notes/NoteMenuButton";
 import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
-import MarkedText from "@/components/notes/MarkedText";
 import { cn } from "@/lib/utils";
 import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
 
-// 選択中のタブだけ白いピルにする
+// 選択中のタブのラベルにマーカーを引く
 const TAB_TRIGGER =
-  "rounded-xl px-5 py-2 text-sm data-[state=active]:border data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:shadow-sm";
+  "tab-trigger rounded-xl px-4 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:font-medium data-[state=active]:text-foreground";
 
 export default function NoteDetail() {
   const { id } = useParams();
@@ -38,13 +37,11 @@ export default function NoteDetail() {
   const [retrying, setRetrying] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [highlights, setHighlights] = useState([]);
 
   const load = async () => {
     try {
       const data = await base44.entities.LectureNote.get(id);
       setNote(data);
-      setHighlights(data.highlights || []);
     } catch {
       setMissing(true);
     } finally {
@@ -86,12 +83,6 @@ export default function NoteDetail() {
     await navigator.clipboard.writeText(note.transcript || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  };
-
-  // 選んだ範囲にマーカーを引いて保存する
-  const handleMarks = async (next) => {
-    setHighlights(next);
-    await base44.entities.LectureNote.update(id, { highlights: next });
   };
 
   if (loading) {
@@ -232,36 +223,30 @@ export default function NoteDetail() {
             <TabsList className="h-auto flex-wrap gap-1 rounded-2xl bg-secondary/70 p-1.5">
               {!isManual && (
                 <TabsTrigger value="summary" className={TAB_TRIGGER}>
-                  まとめ
+                  <span className="tab-label">まとめ</span>
                 </TabsTrigger>
               )}
               {!isManual && (
                 <TabsTrigger value="transcript" className={TAB_TRIGGER}>
-                  文字起こし
+                  <span className="tab-label">文字起こし</span>
                 </TabsTrigger>
               )}
               <TabsTrigger value="memo" className={TAB_TRIGGER}>
-                {isManual ? "ノート本文" : "自分のメモ"}
+                <span className="tab-label">{isManual ? "ノート本文" : "自分のメモ"}</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="summary" className="px-6 py-7 sm:px-8">
-            <NoteSummaryPanel note={note} marks={highlights} onMark={handleMarks} />
+            <NoteSummaryPanel note={note} />
           </TabsContent>
 
           <TabsContent value="transcript" className="px-6 py-7 sm:px-8">
             {note.transcript ? (
               <div className="space-y-4">
-                <div className="max-h-[560px] overflow-y-auto">
-                  <MarkedText
-                    text={note.transcript}
-                    field="transcript"
-                    marks={highlights}
-                    onMark={handleMarks}
-                    className="text-[15px] leading-8 whitespace-pre-wrap"
-                  />
-                </div>
+                <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8">
+                  {note.transcript}
+                </p>
                 <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
                   {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}
                   {copied ? "コピーしました" : "文字起こしをコピー"}
