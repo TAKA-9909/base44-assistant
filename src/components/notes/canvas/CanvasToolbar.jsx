@@ -23,8 +23,10 @@ export default function CanvasToolbar({
   onSize,
   lineMode,
   lineAction,
+  lineColor,
   onToggleLine,
   onLineAction,
+  onLineColor,
   onInsertSymbol,
   onPickImage,
   uploading
@@ -140,6 +142,21 @@ export default function CanvasToolbar({
               >
                 {action.label}
               </button>
+            ))}
+          </div>
+          {/* ラインの色を選ぶ */}
+          <div className="mt-1 flex w-40 flex-wrap justify-center gap-1 border-t border-border pt-1.5">
+            {COLOR_OPTIONS.map((entry) => (
+              <button
+                key={entry.id}
+                type="button"
+                aria-label={entry.label}
+                onClick={() => onLineColor(entry.id)}
+                className={`h-5 w-5 rounded-full border transition ${
+                  lineColor === entry.id ? "border-accent ring-1 ring-accent" : "border-border"
+                }`}
+                style={{ background: entry.value }}
+              />
             ))}
           </div>
         </PopoverContent>

@@ -19,7 +19,8 @@ export default function CanvasBlock({
   onResizeStart,
   onResizeHeightStart,
   onRotateStart,
-  tracing
+  tracing,
+  lineColor
 }) {
   const markerSize = block.type === "marker" ? markerHeight(block) : 0;
   const stampPx = block.type === "stamp" ? stampSize(block) : 0;
@@ -46,6 +47,7 @@ export default function CanvasBlock({
           onSelect={onSelect}
           onChange={onChange}
           tracing={tracing}
+          lineColor={lineColor}
           onWidth={(width) => onChange({ width })}
           onBlur={() => {
             if (!block.text.trim()) onDelete();

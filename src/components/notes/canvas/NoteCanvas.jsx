@@ -20,6 +20,7 @@ export default function NoteCanvas({
   selectedId,
   lineMode,
   lineAction,
+  lineColor,
   onSelect,
   onCreate,
   onCreateLine,
@@ -168,6 +169,7 @@ export default function NoteCanvas({
           selected={block.id === selectedId}
           onSelect={() => onSelect(block.id)}
           tracing={lineMode && lineAction !== "place"}
+          lineColor={lineColor}
           onPressStart={(event) => handlePress(event, block)}
           onChange={(patch) => onUpdate(block.id, patch)}
           onDelete={() => onDelete(block.id)}
