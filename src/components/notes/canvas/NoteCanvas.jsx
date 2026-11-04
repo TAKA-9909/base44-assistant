@@ -81,12 +81,19 @@ export default function NoteCanvas({
       start() {
         element.style.zIndex = "20";
         element.style.userSelect = "none";
+        // 指の位置が飛んで届いても、追いつくまで滑らかにつながるようにする
+        element.style.transition = "transform 90ms linear";
       },
       commit() {
         element.style.zIndex = "";
         element.style.userSelect = "";
+        // 位置を状態として確定するときは、その場で切り替えて跳ねないようにする
+        element.style.transition = "none";
         element.style.transform = rotate.trim();
         if (latest) flushSync(() => onUpdate(block.id, latest));
+        window.requestAnimationFrame(() => {
+          element.style.transition = "";
+        });
       }
     };
   };
