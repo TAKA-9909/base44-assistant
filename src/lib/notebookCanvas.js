@@ -65,10 +65,6 @@ const option = (options, id) => options.find((entry) => entry.id === id) || opti
 export const fontStack = (id) => option(FONT_OPTIONS, id).value;
 export const inkColor = (id) => option(COLOR_OPTIONS, id).value;
 
-// なぞった線の帯は、インク色を薄く重ねて引く
-export const inkBand = (id) =>
-  id ? inkColor(id).replace(/\)$/, " / 0.45)") : "hsl(var(--marker) / 0.85)";
-
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 // Accepts a pixel number or a preset size id (older notes store ids).
@@ -102,7 +98,7 @@ export function createTextBlock(x, y, style, width = 320) {
 }
 
 // なぞった範囲にマーカーの線を引く（同じ範囲をもう一度なぞると消える）
-export function toggleTextMarks(marks, start, end, color) {
+export function toggleTextMarks(marks, start, end) {
   const ranges = Array.isArray(marks) ? marks : [];
   const from = Math.min(start, end);
   const to = Math.max(start, end);
@@ -111,7 +107,7 @@ export function toggleTextMarks(marks, start, end, color) {
   const covered = ranges.some((mark) => mark.start <= from && mark.end >= to);
   const next = covered
     ? ranges.filter((mark) => mark.end <= from || mark.start >= to)
-    : [...ranges, { start: from, end: to, color }];
+    : [...ranges, { start: from, end: to }];
   return next.sort((a, b) => a.start - b.start);
 }
 

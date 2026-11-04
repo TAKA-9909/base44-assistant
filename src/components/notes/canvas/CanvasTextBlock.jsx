@@ -1,52 +1,39 @@
 import React, { useEffect, useRef } from "react";
-import { MIN_TEXT_WIDTH, fontPixels, fontStack, inkBand, inkColor, toggleTextMarks } from "@/lib/notebookCanvas";
+import { MIN_TEXT_WIDTH, fontPixels, fontStack, inkColor, toggleTextMarks } from "@/lib/notebookCanvas";
 
 // なぞった範囲をマーカーの帯つきで描けるよう、文字列を断片に分ける
 const markSegments = (text, marks) => {
   const ranges = (Array.isArray(marks) ? marks : [])
-    .map((mark) => ({
-      start: Math.max(mark.start, 0),
-      end: Math.min(mark.end, text.length),
-      color: mark.color
-    }))
+    .map((mark) => ({ start: Math.max(mark.start, 0), end: Math.min(mark.end, text.length) }))
     .filter((mark) => mark.end > mark.start)
     .sort((a, b) => a.start - b.start);
 
   const merged = [];
   ranges.forEach((range) => {
     const last = merged[merged.length - 1];
-    if (last && last.color === range.color && range.start <= last.end) {
-      last.end = Math.max(last.end, range.end);
-    } else merged.push({ ...range });
+    if (last && range.start <= last.end) last.end = Math.max(last.end, range.end);
+    else merged.push({ ...range });
   });
 
   const segments = [];
   let cursor = 0;
   merged.forEach((range) => {
     if (range.start > cursor) segments.push({ text: text.slice(cursor, range.start), marked: false });
-    segments.push({ text: text.slice(range.start, range.end), marked: true, color: range.color });
+    segments.push({ text: text.slice(range.start, range.end), marked: true });
     cursor = range.end;
   });
   segments.push({ text: text.slice(cursor), marked: false });
   return segments;
 };
 
-const markStyle = (color) => ({
-  backgroundImage: `linear-gradient(${inkBand(color)}, ${inkBand(color)})`,
+const MARK_STYLE = {
+  backgroundImage: "linear-gradient(hsl(var(--marker) / 0.85), hsl(var(--marker) / 0.85))",
   backgroundRepeat: "no-repeat",
   backgroundSize: "100% 0.45em",
   backgroundPosition: "0 88%"
-});
+};
 
-export default function CanvasTextBlock({
-  block,
-  onChange,
-  onSelect,
-  onBlur,
-  onWidth,
-  tracing = false,
-  lineColor
-}) {
+export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onWidth, tracing = false }) {
   const ref = useRef(null);
   const mirrorRef = useRef(null);
 
@@ -83,7 +70,7 @@ export default function CanvasTextBlock({
     if (!tracing) return;
     const { selectionStart, selectionEnd } = event.currentTarget;
     if (selectionEnd <= selectionStart) return;
-    onChange({ marks: toggleTextMarks(block.marks, selectionStart, selectionEnd, lineColor) });
+    onChange({ marks: toggleTextMarks(block.marks, selectionStart, selectionEnd) });
   };
 
   return (
@@ -95,7 +82,7 @@ export default function CanvasTextBlock({
       >
         {markSegments(block.text, block.marks).map((segment, index) =>
           segment.marked ? (
-            <span key={index} style={markStyle(segment.color)}>
+            <span key={index} style={MARK_STYLE}>
               {segment.text}
             </span>
           ) : (

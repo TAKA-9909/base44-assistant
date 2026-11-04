@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import CanvasBlock from "./CanvasBlock";
 import {
   MARKER_HEIGHT,
@@ -21,7 +20,6 @@ export default function NoteCanvas({
   selectedId,
   lineMode,
   lineAction,
-  lineColor,
   onSelect,
   onCreate,
   onCreateLine,
@@ -62,42 +60,6 @@ export default function NoteCanvas({
     suppressClickUntil.current = Date.now() + 300;
   };
 
-  // ドラッグ中は DOM を直接動かし、指を離したときに一度だけ位置を確定する（なめらかに追従させるため）
-  const createDrag = (element, block, width, surface) => {
-    const rotate = block.angle ? ` rotate(${block.angle}deg)` : "";
-    let latest = null;
-
-    return {
-      update(dx, dy) {
-        const next = movedBlockPosition(block, dx, dy, width);
-        latest = next;
-        element.style.transform = `translate3d(${next.x - block.x}px, ${next.y - block.y}px, 0)${rotate}`;
-        // 下の余白まで運んだときは、紙もその場で伸ばして見切れないようにする
-        if (surface) {
-          const bottom = next.y + element.offsetHeight + 160;
-          if (bottom > surface.clientHeight) surface.style.height = `${Math.ceil(bottom)}px`;
-        }
-      },
-      start() {
-        element.style.zIndex = "20";
-        element.style.userSelect = "none";
-        // 指の位置が飛んで届いても、追いつくまで滑らかにつながるようにする
-        element.style.transition = "transform 90ms linear";
-      },
-      commit() {
-        element.style.zIndex = "";
-        element.style.userSelect = "";
-        // 位置を状態として確定するときは、その場で切り替えて跳ねないようにする
-        element.style.transition = "none";
-        element.style.transform = rotate.trim();
-        if (latest) flushSync(() => onUpdate(block.id, latest));
-        window.requestAnimationFrame(() => {
-          element.style.transition = "";
-        });
-      }
-    };
-  };
-
   const handleSurfaceClick = (event) => {
     if (Date.now() < suppressClickUntil.current) return;
     if (event.target !== event.currentTarget) return;
@@ -118,9 +80,6 @@ export default function NoteCanvas({
     const startX = event.clientX;
     const startY = event.clientY;
     const width = surfaceWidth();
-    // ボタンから見たブロック本体を探す（ボタンはハンドル用の行の中にある）
-    const element = event.currentTarget?.closest("[data-canvas-block]");
-    const drag = mode === "move" ? createDrag(element, block, width, surfaceRef.current) : null;
 
     // 回転はブロックの中心を軸にする（回転しても中心は動かない）
     const box = event.currentTarget?.parentElement?.getBoundingClientRect();
@@ -138,8 +97,8 @@ export default function NoteCanvas({
         onUpdate(block.id, { angle: normalizeAngle((block.angle || 0) + pointerAngle(moveEvent) - startAngle) });
         return;
       }
-      if (drag) {
-        drag.update(dx, dy);
+      if (mode === "move") {
+        onUpdate(block.id, movedBlockPosition(block, dx, dy, width));
         return;
       }
       if (mode === "height") {
@@ -163,12 +122,9 @@ export default function NoteCanvas({
       });
     };
 
-    if (drag) drag.start();
-
     const end = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
-      if (drag) drag.commit();
       suppressClick();
     };
 
@@ -181,19 +137,13 @@ export default function NoteCanvas({
     onSelect(block.id);
     if (block.type === "image") return;
 
-    const drag = createDrag(event.currentTarget, block, surfaceWidth(), surfaceRef.current);
-
     startLongPressDrag(event, {
       onActivate: () => {
         const active = document.activeElement;
         if (active && active.tagName === "TEXTAREA" && active.value.trim()) active.blur();
-        drag.start();
       },
-      onDrag: drag.update,
-      onEnd: () => {
-        drag.commit();
-        suppressClick();
-      }
+      onDrag: (dx, dy) => onUpdate(block.id, movedBlockPosition(block, dx, dy, surfaceWidth())),
+      onEnd: suppressClick
     });
   };
 
@@ -218,7 +168,6 @@ export default function NoteCanvas({
           selected={block.id === selectedId}
           onSelect={() => onSelect(block.id)}
           tracing={lineMode && lineAction !== "place"}
-          lineColor={lineColor}
           onPressStart={(event) => handlePress(event, block)}
           onChange={(patch) => onUpdate(block.id, patch)}
           onDelete={() => onDelete(block.id)}
