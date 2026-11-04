@@ -1,5 +1,37 @@
 import React, { useEffect, useRef } from "react";
-import { MIN_TEXT_WIDTH, fontPixels, fontStack, inkColor } from "@/lib/notebookCanvas";
+import { MIN_TEXT_WIDTH, fontPixels, fontStack, inkColor, toggleTextMarks } from "@/lib/notebookCanvas";
+
+// なぞった範囲をマーカーの帯つきで描けるよう、文字列を断片に分ける
+const markSegments = (text, marks) => {
+  const ranges = (Array.isArray(marks) ? marks : [])
+    .map((mark) => ({ start: Math.max(mark.start, 0), end: Math.min(mark.end, text.length) }))
+    .filter((mark) => mark.end > mark.start)
+    .sort((a, b) => a.start - b.start);
+
+  const merged = [];
+  ranges.forEach((range) => {
+    const last = merged[merged.length - 1];
+    if (last && range.start <= last.end) last.end = Math.max(last.end, range.end);
+    else merged.push({ ...range });
+  });
+
+  const segments = [];
+  let cursor = 0;
+  merged.forEach((range) => {
+    if (range.start > cursor) segments.push({ text: text.slice(cursor, range.start), marked: false });
+    segments.push({ text: text.slice(range.start, range.end), marked: true });
+    cursor = range.end;
+  });
+  segments.push({ text: text.slice(cursor), marked: false });
+  return segments;
+};
+
+const MARK_STYLE = {
+  backgroundImage: "linear-gradient(hsl(var(--marker) / 0.85), hsl(var(--marker) / 0.85))",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "100% 0.45em",
+  backgroundPosition: "0 88%"
+};
 
 export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onWidth }) {
   const ref = useRef(null);
@@ -33,8 +65,30 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
     color: inkColor(block.color)
   };
 
+  // なぞり終えたときに、選択した範囲へマーカーの線を引く
+  const handleTrace = (event) => {
+    const { selectionStart, selectionEnd } = event.currentTarget;
+    if (selectionEnd <= selectionStart) return;
+    onChange({ marks: toggleTextMarks(block.marks, selectionStart, selectionEnd) });
+  };
+
   return (
     <>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words"
+        style={{ ...textStyle, color: "transparent" }}
+      >
+        {markSegments(block.text, block.marks).map((segment, index) =>
+          segment.marked ? (
+            <span key={index} style={MARK_STYLE}>
+              {segment.text}
+            </span>
+          ) : (
+            <span key={index}>{segment.text}</span>
+          )
+        )}
+      </div>
       <textarea
         id={`canvas-text-${block.id}`}
         ref={ref}
@@ -43,8 +97,9 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
         onChange={(event) => onChange({ text: event.target.value })}
         onFocus={onSelect}
         onBlur={onBlur}
+        onPointerUp={handleTrace}
         placeholder="ここに入力"
-        className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-notebook-paper-foreground/35"
+        className="relative block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-notebook-paper-foreground/35"
         style={{ ...textStyle, whiteSpace: "pre-wrap", overflowWrap: "break-word" }}
       />
       <span

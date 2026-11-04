@@ -97,6 +97,20 @@ export function createTextBlock(x, y, style, width = 320) {
   };
 }
 
+// なぞった範囲にマーカーの線を引く（同じ範囲をもう一度なぞると消える）
+export function toggleTextMarks(marks, start, end) {
+  const ranges = Array.isArray(marks) ? marks : [];
+  const from = Math.min(start, end);
+  const to = Math.max(start, end);
+  if (to <= from) return ranges;
+
+  const covered = ranges.some((mark) => mark.start <= from && mark.end >= to);
+  const next = covered
+    ? ranges.filter((mark) => mark.end <= from || mark.start >= to)
+    : [...ranges, { start: from, end: to }];
+  return next.sort((a, b) => a.start - b.start);
+}
+
 export function createImageBlock(fileUri, x, y, width = 260) {
   return { id: createId(), type: "image", x: Math.round(x), y: Math.round(y), width, file_uri: fileUri };
 }
