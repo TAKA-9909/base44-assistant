@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Baseline, Highlighter, ImagePlus, Loader2, Palette, Shapes, Type } from "lucide-react";
 import { COLOR_OPTIONS, FONT_OPTIONS, SYMBOL_OPTIONS, fontPixels } from "@/lib/notebookCanvas";
 import CanvasSizeControl from "./CanvasSizeControl";
@@ -39,26 +39,7 @@ export default function CanvasToolbar({
   };
 
   return (
-    <>
-      {lineMode && (
-        <div className="mb-1 flex justify-end gap-1 rounded-lg bg-canvas-bar p-1 text-canvas-bar-foreground shadow-lg">
-          {LINE_ACTIONS.map((action) => (
-            <button
-              key={action.id}
-              type="button"
-              onClick={() => onLineAction(action.id)}
-              className={`rounded-full px-3 py-1 text-[11px] tracking-wide transition ${
-                lineAction === action.id
-                  ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]"
-                  : "bg-canvas-bar-foreground/10 hover:bg-canvas-bar-foreground/20"
-              }`}
-            >
-              {action.label}
-            </button>
-          ))}
-        </div>
-      )}
-      <div className="sticky bottom-0 z-30 flex items-stretch overflow-hidden rounded-b-[22px] bg-canvas-bar text-canvas-bar-foreground shadow-lg">
+    <div className="sticky bottom-0 z-30 flex items-stretch overflow-hidden rounded-b-[22px] bg-canvas-bar text-canvas-bar-foreground shadow-lg">
       <Popover>
         <PopoverTrigger asChild>
           <button type="button" className={ITEM}>
@@ -126,15 +107,44 @@ export default function CanvasToolbar({
         <span>インプット</span>
       </button>
 
-      <button
-        type="button"
-        onClick={onToggleLine}
-        aria-pressed={lineMode}
-        className={`${ITEM} ${lineMode ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]" : ""}`}
-      >
-        <Highlighter className="h-4 w-4" />
-        <span>ライン</span>
-      </button>
+      {/* ラインのボタンの下に、なぞる／置くの選択肢を出す */}
+      <Popover open={lineMode} modal={false}>
+        <PopoverAnchor asChild>
+          <button
+            type="button"
+            onClick={onToggleLine}
+            aria-pressed={lineMode}
+            className={`${ITEM} ${lineMode ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]" : ""}`}
+          >
+            <Highlighter className="h-4 w-4" />
+            <span>ライン</span>
+          </button>
+        </PopoverAnchor>
+        <PopoverContent
+          side="bottom"
+          align="center"
+          sideOffset={6}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          className="w-auto rounded-full p-1"
+        >
+          <div className="flex gap-1">
+            {LINE_ACTIONS.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                onClick={() => onLineAction(action.id)}
+                className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] tracking-wide transition ${
+                  lineAction === action.id
+                    ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]"
+                    : "bg-secondary hover:bg-secondary/70"
+                }`}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       <Popover>
         <PopoverTrigger asChild>
@@ -160,7 +170,6 @@ export default function CanvasToolbar({
       </Popover>
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-      </div>
-    </>
+    </div>
   );
 }
