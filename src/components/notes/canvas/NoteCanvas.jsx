@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import CanvasBlock from "./CanvasBlock";
 import {
   MARKER_HEIGHT,
@@ -61,6 +62,35 @@ export default function NoteCanvas({
     suppressClickUntil.current = Date.now() + 300;
   };
 
+  // ドラッグ中は DOM を直接動かし、指を離したときに一度だけ位置を確定する（なめらかに追従させるため）
+  const createDrag = (element, block, width, surface) => {
+    const rotate = block.angle ? ` rotate(${block.angle}deg)` : "";
+    let latest = null;
+
+    return {
+      update(dx, dy) {
+        const next = movedBlockPosition(block, dx, dy, width);
+        latest = next;
+        element.style.transform = `translate3d(${next.x - block.x}px, ${next.y - block.y}px, 0)${rotate}`;
+        // 下の余白まで運んだときは、紙もその場で伸ばして見切れないようにする
+        if (surface) {
+          const bottom = next.y + element.offsetHeight + 160;
+          if (bottom > surface.clientHeight) surface.style.height = `${Math.ceil(bottom)}px`;
+        }
+      },
+      start() {
+        element.style.zIndex = "20";
+        element.style.userSelect = "none";
+      },
+      commit() {
+        element.style.zIndex = "";
+        element.style.userSelect = "";
+        element.style.transform = rotate.trim();
+        if (latest) flushSync(() => onUpdate(block.id, latest));
+      }
+    };
+  };
+
   const handleSurfaceClick = (event) => {
     if (Date.now() < suppressClickUntil.current) return;
     if (event.target !== event.currentTarget) return;
@@ -81,6 +111,10 @@ export default function NoteCanvas({
     const startX = event.clientX;
     const startY = event.clientY;
     const width = surfaceWidth();
+    const drag =
+      mode === "move"
+        ? createDrag(event.currentTarget?.parentElement, block, width, surfaceRef.current)
+        : null;
 
     // 回転はブロックの中心を軸にする（回転しても中心は動かない）
     const box = event.currentTarget?.parentElement?.getBoundingClientRect();
@@ -98,8 +132,8 @@ export default function NoteCanvas({
         onUpdate(block.id, { angle: normalizeAngle((block.angle || 0) + pointerAngle(moveEvent) - startAngle) });
         return;
       }
-      if (mode === "move") {
-        onUpdate(block.id, movedBlockPosition(block, dx, dy, width));
+      if (drag) {
+        drag.update(dx, dy);
         return;
       }
       if (mode === "height") {
@@ -123,9 +157,12 @@ export default function NoteCanvas({
       });
     };
 
+    if (drag) drag.start();
+
     const end = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
+      if (drag) drag.commit();
       suppressClick();
     };
 
@@ -138,13 +175,19 @@ export default function NoteCanvas({
     onSelect(block.id);
     if (block.type === "image") return;
 
+    const drag = createDrag(event.currentTarget, block, surfaceWidth(), surfaceRef.current);
+
     startLongPressDrag(event, {
       onActivate: () => {
         const active = document.activeElement;
         if (active && active.tagName === "TEXTAREA" && active.value.trim()) active.blur();
+        drag.start();
       },
-      onDrag: (dx, dy) => onUpdate(block.id, movedBlockPosition(block, dx, dy, surfaceWidth())),
-      onEnd: suppressClick
+      onDrag: drag.update,
+      onEnd: () => {
+        drag.commit();
+        suppressClick();
+      }
     });
   };
 
