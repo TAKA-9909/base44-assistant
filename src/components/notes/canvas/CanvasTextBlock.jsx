@@ -33,7 +33,7 @@ const MARK_STYLE = {
   backgroundPosition: "0 88%"
 };
 
-export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onWidth }) {
+export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onWidth, tracing = false }) {
   const ref = useRef(null);
   const mirrorRef = useRef(null);
 
@@ -67,6 +67,7 @@ export default function CanvasTextBlock({ block, onChange, onSelect, onBlur, onW
 
   // なぞり終えたときに、選択した範囲へマーカーの線を引く
   const handleTrace = (event) => {
+    if (!tracing) return;
     const { selectionStart, selectionEnd } = event.currentTarget;
     if (selectionEnd <= selectionStart) return;
     onChange({ marks: toggleTextMarks(block.marks, selectionStart, selectionEnd) });

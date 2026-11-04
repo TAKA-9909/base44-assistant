@@ -15,7 +15,8 @@ export default function CanvasToolbar({
   onFont,
   onColor,
   onSize,
-  onInsertLine,
+  lineMode,
+  onToggleLine,
   onInsertSymbol,
   onPickImage,
   uploading
@@ -97,7 +98,12 @@ export default function CanvasToolbar({
         <span>インプット</span>
       </button>
 
-      <button type="button" onClick={onInsertLine} className={ITEM}>
+      <button
+        type="button"
+        onClick={onToggleLine}
+        aria-pressed={lineMode}
+        className={`${ITEM} ${lineMode ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]" : ""}`}
+      >
         <Highlighter className="h-4 w-4" />
         <span>ライン</span>
       </button>

@@ -15,7 +15,16 @@ import {
 } from "@/lib/notebookCanvas";
 import { startLongPressDrag } from "@/lib/longPressDrag";
 
-export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onUpdate, onDelete }) {
+export default function NoteCanvas({
+  blocks,
+  selectedId,
+  lineMode,
+  onSelect,
+  onCreate,
+  onCreateLine,
+  onUpdate,
+  onDelete
+}) {
   const surfaceRef = useRef(null);
   // 移動の直後に起きるクリックで新しい枠が作られないようにする
   const suppressClickUntil = useRef(0);
@@ -54,7 +63,14 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
     if (Date.now() < suppressClickUntil.current) return;
     if (event.target !== event.currentTarget) return;
     const rect = surfaceRef.current.getBoundingClientRect();
-    onCreate({ x: event.clientX - rect.left, y: event.clientY - rect.top, surfaceWidth: rect.width });
+    const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+
+    // ラインを引くモードのときは、何もない所をタップするとラインを置く
+    if (lineMode) {
+      onCreateLine({ x: Math.round(clamp(point.x, 0, Math.max(rect.width - 220, 0))), y: Math.round(point.y) });
+      return;
+    }
+    onCreate({ ...point, surfaceWidth: rect.width });
   };
 
   const beginGesture = (event, block, mode) => {
@@ -150,6 +166,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
           block={block}
           selected={block.id === selectedId}
           onSelect={() => onSelect(block.id)}
+          tracing={lineMode}
           onPressStart={(event) => handlePress(event, block)}
           onChange={(patch) => onUpdate(block.id, patch)}
           onDelete={() => onDelete(block.id)}

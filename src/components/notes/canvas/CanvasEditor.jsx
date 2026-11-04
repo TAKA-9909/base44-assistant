@@ -14,6 +14,8 @@ import {
 export default function CanvasEditor({ blocks, onChange }) {
   const [style, setStyle] = useState(DEFAULT_STYLE);
   const [selectedId, setSelectedId] = useState(null);
+  // ラインを引くモード（オンの間は、なぞって引くのも置くのもできる）
+  const [lineMode, setLineMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const lastPoint = useRef({ x: 40, y: 40 });
@@ -48,8 +50,8 @@ export default function CanvasEditor({ blocks, onChange }) {
     if (selected.type === "text") updateBlock(selected.id, patch);
   };
 
-  const handleInsertLine = () => {
-    appendBlock(createMarkerBlock(lastPoint.current.x, lastPoint.current.y, style.color));
+  const handleCreateLine = ({ x, y }) => {
+    appendBlock(createMarkerBlock(x, y, style.color));
   };
 
   const handleInsertSymbol = (symbol) => {
@@ -79,8 +81,10 @@ export default function CanvasEditor({ blocks, onChange }) {
       <NoteCanvas
         blocks={blocks}
         selectedId={selectedId}
+        lineMode={lineMode}
         onSelect={setSelectedId}
         onCreate={handleCreate}
+        onCreateLine={handleCreateLine}
         onUpdate={updateBlock}
         onDelete={handleDelete}
       />
@@ -93,7 +97,8 @@ export default function CanvasEditor({ blocks, onChange }) {
           onFont={(id) => applyStyle({ font: id })}
           onColor={(id) => applyStyle({ color: id })}
           onSize={(id) => applyStyle({ size: id })}
-          onInsertLine={handleInsertLine}
+          lineMode={lineMode}
+          onToggleLine={() => setLineMode((current) => !current)}
           onInsertSymbol={handleInsertSymbol}
           onPickImage={handlePickImage}
           uploading={uploading}

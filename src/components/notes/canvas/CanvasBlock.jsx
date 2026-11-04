@@ -18,7 +18,8 @@ export default function CanvasBlock({
   onMoveStart,
   onResizeStart,
   onResizeHeightStart,
-  onRotateStart
+  onRotateStart,
+  tracing
 }) {
   const markerSize = block.type === "marker" ? markerHeight(block) : 0;
   const stampPx = block.type === "stamp" ? stampSize(block) : 0;
@@ -44,6 +45,7 @@ export default function CanvasBlock({
           block={block}
           onSelect={onSelect}
           onChange={onChange}
+          tracing={tracing}
           onWidth={(width) => onChange({ width })}
           onBlur={() => {
             if (!block.text.trim()) onDelete();
