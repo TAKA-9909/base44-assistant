@@ -111,10 +111,9 @@ export default function NoteCanvas({
     const startX = event.clientX;
     const startY = event.clientY;
     const width = surfaceWidth();
-    const drag =
-      mode === "move"
-        ? createDrag(event.currentTarget?.parentElement, block, width, surfaceRef.current)
-        : null;
+    // ボタンから見たブロック本体を探す（ボタンはハンドル用の行の中にある）
+    const element = event.currentTarget?.closest("[data-canvas-block]");
+    const drag = mode === "move" ? createDrag(element, block, width, surfaceRef.current) : null;
 
     // 回転はブロックの中心を軸にする（回転しても中心は動かない）
     const box = event.currentTarget?.parentElement?.getBoundingClientRect();

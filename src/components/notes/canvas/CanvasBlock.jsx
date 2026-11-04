@@ -27,6 +27,7 @@ export default function CanvasBlock({
 
   return (
     <div
+      data-canvas-block=""
       className={cn(
         "absolute",
         // 長押しドラッグでの移動中に画面がスクロールしないようにする
