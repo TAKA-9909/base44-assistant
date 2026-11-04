@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import CanvasBlock from "./CanvasBlock";
+import { createCanvasDrag } from "@/lib/canvasDrag";
 import {
   MARKER_HEIGHT,
   MAX_MARKER_HEIGHT,
@@ -137,13 +139,19 @@ export default function NoteCanvas({
     onSelect(block.id);
     if (block.type === "image") return;
 
+    const drag = createCanvasDrag(event.currentTarget, block, surfaceWidth());
+
     startLongPressDrag(event, {
       onActivate: () => {
         const active = document.activeElement;
         if (active && active.tagName === "TEXTAREA" && active.value.trim()) active.blur();
       },
-      onDrag: (dx, dy) => onUpdate(block.id, movedBlockPosition(block, dx, dy, surfaceWidth())),
-      onEnd: suppressClick
+      onDrag: (dx, dy) => drag?.update(dx, dy),
+      onEnd: () => {
+        suppressClick();
+        const position = drag?.commit();
+        if (position) flushSync(() => onUpdate(block.id, position));
+      }
     });
   };
 
