@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CanvasBlock from "./CanvasBlock";
 import {
   MARKER_HEIGHT,
@@ -19,6 +19,27 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
   const surfaceRef = useRef(null);
   // 移動の直後に起きるクリックで新しい枠が作られないようにする
   const suppressClickUntil = useRef(0);
+  // 紙は書いた分だけ縦に伸びる（縮みはしない）
+  const [surfaceHeight, setSurfaceHeight] = useState(PAPER_HEIGHT);
+
+  useEffect(() => {
+    const surface = surfaceRef.current;
+    if (!surface) return;
+
+    const grow = () => {
+      const top = surface.getBoundingClientRect().top;
+      const bottom = Array.from(surface.children).reduce(
+        (max, child) => Math.max(max, child.getBoundingClientRect().bottom - top),
+        0
+      );
+      setSurfaceHeight((current) => (bottom + 160 > current ? Math.ceil(bottom + 160) : current));
+    };
+
+    grow();
+    const observer = new ResizeObserver(grow);
+    Array.from(surface.children).forEach((child) => observer.observe(child));
+    return () => observer.disconnect();
+  }, [blocks]);
 
   const surfaceWidth = () => {
     const el = surfaceRef.current;
@@ -114,7 +135,7 @@ export default function NoteCanvas({ blocks, selectedId, onSelect, onCreate, onU
       ref={surfaceRef}
       data-canvas-surface=""
       onClick={handleSurfaceClick}
-      style={{ height: `${PAPER_HEIGHT}px` }}
+      style={{ height: `${surfaceHeight}px` }}
       className="notebook-ruled-soft relative w-full cursor-text overflow-hidden bg-card"
     >
       {blocks.length === 0 && (

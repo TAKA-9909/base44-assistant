@@ -1,5 +1,6 @@
 export const CANVAS_VERSION = 1;
 export const PAPER_WIDTH = 760;
+// 紙の最小の高さ。書き込んだ分だけ下に伸びる
 export const PAPER_HEIGHT = 780;
 
 export const FONT_OPTIONS = [
@@ -110,10 +111,10 @@ export const markerHeight = (block) =>
 export const blockSpanWidth = (block) =>
   block.width || (block.type === "stamp" ? stampSize(block) : 0);
 
-// ドラッグ中の移動先（紙の外に出ないように収める）
+// ドラッグ中の移動先（左右は紙の中に収め、下方向は制限なし）
 export const movedBlockPosition = (block, dx, dy, surfaceWidth) => ({
   x: Math.round(clamp(block.x + dx, 0, Math.max(surfaceWidth - blockSpanWidth(block), 0))),
-  y: Math.round(clamp(block.y + dy, 0, PAPER_HEIGHT - 44))
+  y: Math.round(Math.max(block.y + dy, 0))
 });
 
 // 上下の辺は水平、左右の辺は右に傾いた平行四辺形にする
