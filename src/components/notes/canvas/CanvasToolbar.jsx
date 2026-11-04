@@ -8,6 +8,13 @@ const ITEM =
   "flex flex-1 flex-col items-center gap-1.5 border-l border-canvas-bar-foreground/15 px-2 py-3.5 text-[11px] tracking-wide transition first:border-l-0 hover:bg-canvas-bar-foreground/10 disabled:opacity-60";
 const OPTION = "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition hover:bg-secondary";
 
+// ラインを引くモードのときに選べる動き
+const LINE_ACTIONS = [
+  { id: "trace", label: "なぞる" },
+  { id: "place", label: "置く" },
+  { id: "both", label: "両方" }
+];
+
 export default function CanvasToolbar({
   font,
   color,
@@ -16,7 +23,9 @@ export default function CanvasToolbar({
   onColor,
   onSize,
   lineMode,
+  lineAction,
   onToggleLine,
+  onLineAction,
   onInsertSymbol,
   onPickImage,
   uploading
@@ -30,7 +39,26 @@ export default function CanvasToolbar({
   };
 
   return (
-    <div className="sticky bottom-0 z-30 flex items-stretch overflow-hidden rounded-b-[22px] bg-canvas-bar text-canvas-bar-foreground shadow-lg">
+    <>
+      {lineMode && (
+        <div className="mb-1 flex justify-end gap-1 rounded-lg bg-canvas-bar p-1 text-canvas-bar-foreground shadow-lg">
+          {LINE_ACTIONS.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              onClick={() => onLineAction(action.id)}
+              className={`rounded-full px-3 py-1 text-[11px] tracking-wide transition ${
+                lineAction === action.id
+                  ? "bg-[hsl(var(--marker))] text-[hsl(var(--notebook-label-foreground))]"
+                  : "bg-canvas-bar-foreground/10 hover:bg-canvas-bar-foreground/20"
+              }`}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="sticky bottom-0 z-30 flex items-stretch overflow-hidden rounded-b-[22px] bg-canvas-bar text-canvas-bar-foreground shadow-lg">
       <Popover>
         <PopoverTrigger asChild>
           <button type="button" className={ITEM}>
@@ -131,7 +159,8 @@ export default function CanvasToolbar({
         </PopoverContent>
       </Popover>
 
-      <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-    </div>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+      </div>
+    </>
   );
 }

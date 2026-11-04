@@ -16,6 +16,8 @@ export default function CanvasEditor({ blocks, onChange }) {
   const [selectedId, setSelectedId] = useState(null);
   // ラインを引くモード（オンの間は、なぞって引くのも置くのもできる）
   const [lineMode, setLineMode] = useState(false);
+  // ラインのモードで「なぞる」「置く」のどちらをするか
+  const [lineAction, setLineAction] = useState("both");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const lastPoint = useRef({ x: 40, y: 40 });
@@ -82,6 +84,7 @@ export default function CanvasEditor({ blocks, onChange }) {
         blocks={blocks}
         selectedId={selectedId}
         lineMode={lineMode}
+        lineAction={lineAction}
         onSelect={setSelectedId}
         onCreate={handleCreate}
         onCreateLine={handleCreateLine}
@@ -98,7 +101,9 @@ export default function CanvasEditor({ blocks, onChange }) {
           onColor={(id) => applyStyle({ color: id })}
           onSize={(id) => applyStyle({ size: id })}
           lineMode={lineMode}
+          lineAction={lineAction}
           onToggleLine={() => setLineMode((current) => !current)}
+          onLineAction={setLineAction}
           onInsertSymbol={handleInsertSymbol}
           onPickImage={handlePickImage}
           uploading={uploading}

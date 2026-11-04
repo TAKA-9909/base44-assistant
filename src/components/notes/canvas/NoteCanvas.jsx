@@ -19,6 +19,7 @@ export default function NoteCanvas({
   blocks,
   selectedId,
   lineMode,
+  lineAction,
   onSelect,
   onCreate,
   onCreateLine,
@@ -66,7 +67,7 @@ export default function NoteCanvas({
     const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
     // ラインを引くモードのときは、何もない所をタップするとラインを置く
-    if (lineMode) {
+    if (lineMode && lineAction !== "trace") {
       onCreateLine({ x: Math.round(clamp(point.x, 0, Math.max(rect.width - 220, 0))), y: Math.round(point.y) });
       return;
     }
@@ -166,7 +167,7 @@ export default function NoteCanvas({
           block={block}
           selected={block.id === selectedId}
           onSelect={() => onSelect(block.id)}
-          tracing={lineMode}
+          tracing={lineMode && lineAction !== "place"}
           onPressStart={(event) => handlePress(event, block)}
           onChange={(patch) => onUpdate(block.id, patch)}
           onDelete={() => onDelete(block.id)}
