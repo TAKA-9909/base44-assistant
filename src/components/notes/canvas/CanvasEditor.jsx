@@ -17,7 +17,7 @@ export default function CanvasEditor({ blocks, onChange }) {
   // ラインを引くモード（オンの間は、なぞって引くのも置くのもできる）
   const [lineMode, setLineMode] = useState(false);
   // ラインのモードで「なぞる」「置く」のどちらをするか
-  const [lineAction, setLineAction] = useState("both");
+  const [lineAction, setLineAction] = useState("trace");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const lastPoint = useRef({ x: 40, y: 40 });

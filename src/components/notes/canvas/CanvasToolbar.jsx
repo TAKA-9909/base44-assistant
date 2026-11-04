@@ -11,8 +11,7 @@ const OPTION = "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left 
 // ラインを引くモードのときに選べる動き
 const LINE_ACTIONS = [
   { id: "trace", label: "なぞる" },
-  { id: "place", label: "置く" },
-  { id: "both", label: "両方" }
+  { id: "place", label: "置く" }
 ];
 
 export default function CanvasToolbar({
