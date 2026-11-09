@@ -255,8 +255,10 @@ export default function AudioCapture({ value, onChange, memo = "", onMemoChange 
             <Square className="mr-2 h-3.5 w-3.5" />
             停止して保存
           </Button>
-          <LiveTranscriptPanel text={liveText} processing={processing} />
-          <RecordingMemo value={memo} onChange={onMemoChange} />
+          <div className="grid w-full items-start gap-4 sm:grid-cols-2">
+            <LiveTranscriptPanel text={liveText} processing={processing} />
+            <RecordingMemo value={memo} onChange={onMemoChange} />
+          </div>
         </div>
       ) : finishing ? (
         <div className="flex items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card p-8">
