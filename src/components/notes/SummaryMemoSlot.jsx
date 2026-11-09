@@ -5,8 +5,10 @@ import StickyMemo from "./StickyMemo";
 const newId = () => `memo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 // まとめの区切りと区切りの隙間に、付箋メモを貼る場所
-export default function SummaryMemoSlot({ anchor, memos, onChange }) {
-  const own = memos.filter((memo) => memo.anchor === anchor);
+// anchors を渡すと、複数の区切りのメモを同じ場所にまとめて貼れる
+export default function SummaryMemoSlot({ anchor, anchors, memos, onChange }) {
+  const targets = anchors || [anchor];
+  const own = memos.filter((memo) => targets.includes(memo.anchor));
 
   const addMemo = () => onChange([...memos, { id: newId(), anchor, text: "" }]);
   const saveMemo = (id, text) =>

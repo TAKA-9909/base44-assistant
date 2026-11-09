@@ -5,29 +5,34 @@ const SectionTitle = ({ children }) => (
   <h3 className="mb-4 font-display text-base tracking-wide text-foreground">{children}</h3>
 );
 
+// 録音中に書いたメモは「要約」下のメモ欄にまとめて貼る
+const SUMMARY_MEMO_ANCHORS = ["summary", "recording"];
+
 export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () => {} }) {
   const hasContent =
     note.summary || note.key_points?.length || note.outline?.length || note.terms?.length;
-  const recordingMemos = memos.filter((memo) => memo.anchor === "recording");
+  const summaryMemos = memos.filter((memo) => SUMMARY_MEMO_ANCHORS.includes(memo.anchor));
 
-  if (!hasContent && recordingMemos.length === 0) {
+  if (!hasContent && summaryMemos.length === 0) {
     return <p className="text-sm text-muted-foreground">まだまとめがありません。</p>;
   }
 
   return (
     <div className="space-y-10">
-      {recordingMemos.length > 0 && (
+      {(note.summary || summaryMemos.length > 0) && (
         <section>
-          <SectionTitle>録音中に書いたメモ</SectionTitle>
-          <SummaryMemoSlot anchor="recording" memos={memos} onChange={onMemosChange} />
-        </section>
-      )}
-
-      {note.summary && (
-        <section>
-          <SectionTitle>要約</SectionTitle>
-          <p className="text-[15px] leading-8 text-foreground/90">{note.summary}</p>
-          <SummaryMemoSlot anchor="summary" memos={memos} onChange={onMemosChange} />
+          {note.summary && (
+            <>
+              <SectionTitle>要約</SectionTitle>
+              <p className="text-[15px] leading-8 text-foreground/90">{note.summary}</p>
+            </>
+          )}
+          <SummaryMemoSlot
+            anchor="summary"
+            anchors={SUMMARY_MEMO_ANCHORS}
+            memos={memos}
+            onChange={onMemosChange}
+          />
         </section>
       )}
 
