@@ -8,13 +8,21 @@ const SectionTitle = ({ children }) => (
 export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () => {} }) {
   const hasContent =
     note.summary || note.key_points?.length || note.outline?.length || note.terms?.length;
+  const recordingMemos = memos.filter((memo) => memo.anchor === "recording");
 
-  if (!hasContent) {
+  if (!hasContent && recordingMemos.length === 0) {
     return <p className="text-sm text-muted-foreground">まだまとめがありません。</p>;
   }
 
   return (
     <div className="space-y-10">
+      {recordingMemos.length > 0 && (
+        <section>
+          <SectionTitle>録音中に書いたメモ</SectionTitle>
+          <SummaryMemoSlot anchor="recording" memos={memos} onChange={onMemosChange} />
+        </section>
+      )}
+
       {note.summary && (
         <section>
           <SectionTitle>要約</SectionTitle>

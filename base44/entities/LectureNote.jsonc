@@ -124,6 +124,9 @@
         }
       }
     },
+    "recording_memos_saved": {
+      "type": "boolean"
+    },
     "content": {
       "type": "string"
     },

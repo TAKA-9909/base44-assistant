@@ -21,6 +21,7 @@ import AudioPlayer from "@/components/notes/AudioPlayer";
 import NoteMenuButton from "@/components/notes/NoteMenuButton";
 import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
+import { ensureRecordingMemos } from "@/lib/recordingMemos";
 import { cn } from "@/lib/utils";
 import {
   formatDate,
@@ -48,7 +49,8 @@ export default function NoteDetail() {
   const load = async () => {
     try {
       const data = await base44.entities.LectureNote.get(id);
-      setNote(data);
+      const memos = await ensureRecordingMemos(data);
+      setNote({ ...data, summary_memos: memos });
       setTranscript(await loadTranscript(data));
     } catch {
       setMissing(true);
