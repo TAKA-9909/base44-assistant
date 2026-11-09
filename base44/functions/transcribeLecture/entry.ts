@@ -50,12 +50,86 @@ async function normalizeAudioUrl(base44, audioUrl) {
   }
 }
 
-// 1つの音声ファイルを文字起こしする
-async function transcribe(base44, audioUrl) {
-  const raw = await base44.asServiceRole.integrations.Core.TranscribeAudio({
-    audio_url: await normalizeAudioUrl(base44, audioUrl)
-  });
+const MAX_AUDIO_BYTES = 24 * 1024 * 1024;
+const PART_BYTES = 18 * 1024 * 1024;
+const SPLITTABLE_FORMATS = ['wav', 'mp3', 'mpeg'];
+
+const extensionOf = (url) => (url.split('?')[0].split('.').pop() || '').toLowerCase();
+
+// WAV はヘッダーを付け直して PCM を区切る
+function splitWav(bytes) {
+  const header = bytes.subarray(0, 44);
+  const pcm = bytes.subarray(44);
+  const step = PART_BYTES - 44;
+  const parts = [];
+
+  for (let offset = 0; offset < pcm.length; offset += step) {
+    const chunk = pcm.subarray(offset, Math.min(offset + step, pcm.length));
+    const part = new Uint8Array(44 + chunk.length);
+    part.set(header, 0);
+    const view = new DataView(part.buffer);
+    view.setUint32(4, 36 + chunk.length, true);
+    view.setUint32(40, chunk.length, true);
+    part.set(chunk, 44);
+    parts.push(part);
+  }
+
+  return parts;
+}
+
+// MP3 はフレームの切れ目まで進めてから区切る
+function splitMp3(bytes) {
+  const parts = [];
+  let start = 0;
+
+  while (start < bytes.length) {
+    let end = Math.min(start + PART_BYTES, bytes.length);
+    if (end < bytes.length) {
+      while (end < bytes.length - 1 && !(bytes[end] === 0xff && (bytes[end + 1] & 0xe0) === 0xe0)) end += 1;
+    }
+    parts.push(bytes.subarray(start, end));
+    start = end;
+  }
+
+  return parts;
+}
+
+async function transcribeUrl(base44, audioUrl) {
+  const raw = await base44.asServiceRole.integrations.Core.TranscribeAudio({ audio_url: audioUrl });
   return typeof raw === 'string' ? raw.trim() : '';
+}
+
+// 25MB を超える音声は、文字起こしできる大きさに区切ってから送る
+async function transcribe(base44, audioUrl) {
+  const normalized = await normalizeAudioUrl(base44, audioUrl);
+  const extension = extensionOf(normalized);
+
+  let size = 0;
+  try {
+    const head = await fetch(normalized, { method: 'HEAD' });
+    size = Number(head.headers.get('content-length') || 0);
+  } catch {
+    size = 0;
+  }
+
+  if (!size || size <= MAX_AUDIO_BYTES || !SPLITTABLE_FORMATS.includes(extension)) {
+    return transcribeUrl(base44, normalized);
+  }
+
+  const bytes = new Uint8Array(await (await fetch(normalized)).arrayBuffer());
+  const chunks = extension === 'wav' ? splitWav(bytes) : splitMp3(bytes);
+  const texts = [];
+
+  for (let index = 0; index < chunks.length; index += 1) {
+    const file = new File([chunks[index]], `lecture-part-${index + 1}.${extension}`, {
+      type: extension === 'wav' ? 'audio/wav' : 'audio/mpeg'
+    });
+    const uploaded = await base44.asServiceRole.integrations.Core.UploadPublicFile({ file });
+    if (!uploaded?.file_url) continue;
+    texts.push(await transcribeUrl(base44, uploaded.file_url));
+  }
+
+  return texts.filter(Boolean).join('\n');
 }
 
 // 文字起こしからノート（要約・重要ポイント・アウトライン・用語）を作る
