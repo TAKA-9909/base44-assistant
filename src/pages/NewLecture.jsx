@@ -8,7 +8,13 @@ import { Loader2, Sparkles } from "lucide-react";
 import AudioCapture from "@/components/notes/AudioCapture";
 import NotePaper from "@/components/notes/NotePaper";
 import PageNav from "@/components/nav/PageNav";
-import { formatDate, generateNote, noteErrorMessage, uploadAudioFiles } from "@/lib/lectureUtils";
+import {
+  formatDate,
+  generateNote,
+  generateNoteFromTranscript,
+  noteErrorMessage,
+  uploadAudioFiles
+} from "@/lib/lectureUtils";
 import { splitAudioFile } from "@/lib/audioSplit";
 
 export default function NewLecture() {
@@ -33,23 +39,31 @@ export default function NewLecture() {
     let created = null;
 
     try {
-      // .weba など文字起こしが扱えない拡張子にならないよう、保存する形式を整える
-      const SUPPORTED = ["flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "oga", "ogg", "wav", "webm"];
-      const rawExtension = (capture.blob.name?.split(".").pop() || "").toLowerCase();
-      const isWebm = (capture.blob.type || "").includes("webm") || rawExtension === "weba";
-      const extension = isWebm
-        ? "webm"
-        : capture.source === "recording"
-          ? "m4a"
-          : SUPPORTED.includes(rawExtension)
-            ? rawExtension
-            : "mp3";
-      const file = new File([capture.blob], `lecture-${Date.now()}.${extension}`, {
-        type: isWebm ? "video/webm" : capture.blob.type || "audio/mpeg"
-      });
-      // 25MB を超える音声は端末の中で分割してから送る
-      const parts = await splitAudioFile(file);
-      const audioUrls = await uploadAudioFiles(parts);
+      // 録音中に区切って保存した音声は、そのまま使う（文字起こしも録音中に済んでいる）
+      const liveParts = (capture.parts || []).filter((part) => part.url);
+      let audioUrls;
+
+      if (liveParts.length > 0) {
+        audioUrls = liveParts.map((part) => part.url);
+      } else {
+        // .weba など文字起こしが扱えない拡張子にならないよう、保存する形式を整える
+        const SUPPORTED = ["flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "oga", "ogg", "wav", "webm"];
+        const rawExtension = (capture.blob.name?.split(".").pop() || "").toLowerCase();
+        const isWebm = (capture.blob.type || "").includes("webm") || rawExtension === "weba";
+        const extension = isWebm
+          ? "webm"
+          : capture.source === "recording"
+            ? "m4a"
+            : SUPPORTED.includes(rawExtension)
+              ? rawExtension
+              : "mp3";
+        const file = new File([capture.blob], `lecture-${Date.now()}.${extension}`, {
+          type: isWebm ? "video/webm" : capture.blob.type || "audio/mpeg"
+        });
+        // 25MB を超える音声は端末の中で分割してから送る
+        const parts = await splitAudioFile(file);
+        audioUrls = await uploadAudioFiles(parts);
+      }
 
       created = await base44.entities.LectureNote.create({
         title: title.trim() || `${formatDate(lectureDate)}の講義`,
@@ -63,12 +77,26 @@ export default function NewLecture() {
       });
 
       setStep("processing");
-      await generateNote({
-        noteId: created.id,
-        audioUrls,
-        title: title.trim(),
-        course: course.trim()
-      });
+      const liveTranscript =
+        liveParts.length > 0 && liveParts.every((part) => (part.transcript || "").trim())
+          ? liveParts.map((part) => part.transcript.trim()).join("\n")
+          : "";
+
+      if (liveTranscript) {
+        await generateNoteFromTranscript({
+          noteId: created.id,
+          transcript: liveTranscript,
+          title: title.trim(),
+          course: course.trim()
+        });
+      } else {
+        await generateNote({
+          noteId: created.id,
+          audioUrls,
+          title: title.trim(),
+          course: course.trim()
+        });
+      }
 
       navigate(`/notes/${created.id}`);
     } catch (err) {

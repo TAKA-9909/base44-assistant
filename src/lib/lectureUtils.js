@@ -68,25 +68,22 @@ const invoke = async (payload) => {
   }
 };
 
-// 分割された音声を1つずつ文字起こしし、まとめてからノートを作る
-export async function generateNote({ noteId, audioUrls, title, course }) {
-  const urls = (audioUrls || []).filter(Boolean);
-  if (urls.length === 0) throw new Error("音声が見つかりませんでした。");
+// 1つの音声を文字起こしする
+export async function transcribeAudioUrl(audioUrl) {
+  const response = await invoke({ mode: "transcribe", audio_url: audioUrl });
+  const data = response?.data || {};
+  if (data.error) throw new Error(data.error);
+  return data.transcript || "";
+}
 
-  const parts = [];
-  for (const audioUrl of urls) {
-    const response = await invoke({ mode: "transcribe", audio_url: audioUrl });
-    const data = response?.data || {};
-    if (data.error) throw new Error(data.error);
-    if (data.transcript) parts.push(data.transcript);
-  }
-
-  const transcript = parts.join("\n");
-  if (!transcript.trim()) throw new Error("音声を文字起こしできませんでした。");
+// 文字起こし済みの内容からノートを作る
+export async function generateNoteFromTranscript({ noteId, transcript, title, course }) {
+  const text = (transcript || "").trim();
+  if (!text) throw new Error("音声を文字起こしできませんでした。");
 
   const response = await invoke({
     mode: "note",
-    transcript,
+    transcript: text,
     title: title || "",
     course: course || ""
   });
@@ -94,7 +91,7 @@ export async function generateNote({ noteId, audioUrls, title, course }) {
   if (data.error) throw new Error(data.error);
 
   await base44.entities.LectureNote.update(noteId, {
-    transcript,
+    transcript: text,
     summary: data.summary || "",
     key_points: data.key_points || [],
     outline: data.outline || [],
@@ -104,4 +101,20 @@ export async function generateNote({ noteId, audioUrls, title, course }) {
   });
 
   return data;
+}
+
+// 分割された音声を1つずつ文字起こしし、まとめてからノートを作る
+export async function generateNote({ noteId, audioUrls, title, course }) {
+  const urls = (audioUrls || []).filter(Boolean);
+  if (urls.length === 0) throw new Error("音声が見つかりませんでした。");
+
+  const parts = [];
+  for (const audioUrl of urls) {
+    parts.push(await transcribeAudioUrl(audioUrl));
+  }
+
+  const transcript = parts.filter(Boolean).join("\n");
+  if (!transcript.trim()) throw new Error("音声を文字起こしできませんでした。");
+
+  return generateNoteFromTranscript({ noteId, transcript, title, course });
 }

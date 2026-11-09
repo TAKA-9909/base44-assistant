@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Upload, RotateCcw } from "lucide-react";
-import { formatClock, formatDuration } from "@/lib/lectureUtils";
+import { Mic, Square, Upload, RotateCcw, Loader2 } from "lucide-react";
+import { formatClock, formatDuration, transcribeAudioUrl, uploadAudio } from "@/lib/lectureUtils";
 import { needsSplit } from "@/lib/audioSplit";
+import AudioPlayer from "./AudioPlayer";
+import LiveTranscriptPanel from "./LiveTranscriptPanel";
+
+// 30秒ごとに区切って、録音しながら文字起こししていく
+const SEGMENT_SECONDS = 30;
 
 const pickMimeType = () => {
   if (typeof MediaRecorder === "undefined") return "";
@@ -20,55 +25,138 @@ const readDuration = (url) =>
     audio.src = url;
   });
 
+const segmentExtension = (mimeType) => ((mimeType || "").includes("mp4") ? "m4a" : "webm");
+
 export default function AudioCapture({ value, onChange }) {
   const [recording, setRecording] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState("");
+  const [liveText, setLiveText] = useState("");
+  const [processing, setProcessing] = useState(false);
+
   const recorderRef = useRef(null);
-  const chunksRef = useRef([]);
+  const segmentTimerRef = useRef(null);
   const streamRef = useRef(null);
   const timerRef = useRef(null);
   const elapsedRef = useRef(0);
+  const recordingRef = useRef(false);
+  const slotsRef = useRef([]);
+  const pendingRef = useRef(0);
+  const queueRef = useRef(Promise.resolve());
+  const stopRequestedRef = useRef(false);
 
   useEffect(
     () => () => {
       clearInterval(timerRef.current);
+      clearTimeout(segmentTimerRef.current);
       streamRef.current?.getTracks().forEach((track) => track.stop());
     },
     []
   );
 
+  // 区切った音声を1つずつ保存して文字起こしする
+  const processSlot = async (slot) => {
+    try {
+      const extension = segmentExtension(slot.blob.type);
+      const file = new File([slot.blob], `lecture-part-${slot.index}.${extension}`, {
+        type: slot.blob.type || "audio/webm"
+      });
+      slot.url = await uploadAudio(file);
+      slot.transcript = await transcribeAudioUrl(slot.url);
+      setLiveText((prev) => (prev ? `${prev}\n${slot.transcript}` : slot.transcript));
+    } catch {
+      // 失敗した区間は文字起こしなしで残し、ノート作成のときにやり直す
+    }
+  };
+
+  // すべての区間の処理が終わったら、停止済みの録音を親に渡す
+  const finishIfReady = () => {
+    if (!stopRequestedRef.current || pendingRef.current > 0 || recordingRef.current) return;
+    stopRequestedRef.current = false;
+    const slots = slotsRef.current;
+    if (slots.length === 0) {
+      setFinishing(false);
+      return;
+    }
+    const parts = slots.filter((slot) => slot.url);
+    const wholeBlob =
+      parts.length === 0
+        ? new Blob(slots.map((slot) => slot.blob), { type: slots[0].blob.type || "audio/webm" })
+        : slots[0].blob;
+    const url = parts.length > 0 ? parts[0].url : URL.createObjectURL(wholeBlob);
+
+    setFinishing(false);
+    onChange({
+      blob: wholeBlob,
+      url,
+      source: "recording",
+      duration: elapsedRef.current,
+      parts: parts.map((slot) => ({ url: slot.url, transcript: slot.transcript }))
+    });
+  };
+
+  const handleSegment = (blob) => {
+    const slot = { blob, url: "", transcript: "", index: slotsRef.current.length + 1 };
+    slotsRef.current.push(slot);
+    pendingRef.current += 1;
+    setProcessing(true);
+    // 順番どおりに1つずつ処理する
+    queueRef.current = queueRef.current.then(() => processSlot(slot)).then(() => {
+      pendingRef.current -= 1;
+      if (pendingRef.current === 0) setProcessing(false);
+      finishIfReady();
+    });
+  };
+
+  const startSegment = () => {
+    const stream = streamRef.current;
+    if (!stream) return;
+    const mimeType = pickMimeType();
+    // 長い講義でも送信が途切れないよう、音声だけを小さく録音する
+    const recorder = new MediaRecorder(stream, {
+      ...(mimeType ? { mimeType } : {}),
+      audioBitsPerSecond: 32000
+    });
+    const chunks = [];
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
+    };
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      if (blob.size > 0) handleSegment(blob);
+      if (recordingRef.current) {
+        startSegment();
+      } else {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        if (blob.size === 0) finishIfReady();
+      }
+    };
+    recorder.start();
+    recorderRef.current = recorder;
+    clearTimeout(segmentTimerRef.current);
+    segmentTimerRef.current = setTimeout(() => {
+      if (recorder.state !== "inactive") recorder.stop();
+    }, SEGMENT_SECONDS * 1000);
+  };
+
   const startRecording = async () => {
     setError("");
+    setLiveText("");
+    setProcessing(false);
+    slotsRef.current = [];
+    pendingRef.current = 0;
+    stopRequestedRef.current = false;
+    elapsedRef.current = 0;
+    setSeconds(0);
+    setFinishing(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const mimeType = pickMimeType();
-      // 長い講義でも送信が途切れないよう、音声だけを小さく録音する
-      const recorder = new MediaRecorder(stream, {
-        ...(mimeType ? { mimeType } : {}),
-        audioBitsPerSecond: 32000
-      });
-      chunksRef.current = [];
-      elapsedRef.current = 0;
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
-      };
-      recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-        onChange({
-          blob,
-          url: URL.createObjectURL(blob),
-          source: "recording",
-          duration: elapsedRef.current
-        });
-        streamRef.current?.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      };
-      recorder.start();
-      recorderRef.current = recorder;
+      recordingRef.current = true;
       setRecording(true);
-      setSeconds(0);
+      startSegment();
       timerRef.current = setInterval(() => {
         elapsedRef.current += 1;
         setSeconds(elapsedRef.current);
@@ -80,9 +168,18 @@ export default function AudioCapture({ value, onChange }) {
 
   const stopRecording = () => {
     clearInterval(timerRef.current);
-    recorderRef.current?.stop();
-    recorderRef.current = null;
+    clearTimeout(segmentTimerRef.current);
+    recordingRef.current = false;
+    stopRequestedRef.current = true;
     setRecording(false);
+    setFinishing(true);
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    } else {
+      finishIfReady();
+    }
   };
 
   const handleFile = async (event) => {
@@ -106,6 +203,11 @@ export default function AudioCapture({ value, onChange }) {
             {value.duration > 0 && (
               <p className="text-xs text-muted-foreground">{formatDuration(value.duration)}</p>
             )}
+            {value.parts?.length > 1 && (
+              <p className="text-xs text-muted-foreground">
+                {value.parts.length}分割で保存しました（続けて再生できます）
+              </p>
+            )}
             {needsSplit(value.blob) && (
               <p className="text-xs text-muted-foreground">
                 大きな音声なので、文字起こしのときに自動で分割します
@@ -117,7 +219,7 @@ export default function AudioCapture({ value, onChange }) {
             {value.source === "recording" ? "録り直す" : "選び直す"}
           </Button>
         </div>
-        <audio controls src={value.url} className="w-full" />
+        <AudioPlayer src={value.url} urls={value.parts?.map((part) => part.url)} />
       </div>
     );
   }
@@ -137,6 +239,12 @@ export default function AudioCapture({ value, onChange }) {
             <Square className="mr-2 h-3.5 w-3.5" />
             停止して保存
           </Button>
+          <LiveTranscriptPanel text={liveText} processing={processing} />
+        </div>
+      ) : finishing ? (
+        <div className="flex items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card p-8">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">録音を保存しています…</p>
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -150,7 +258,7 @@ export default function AudioCapture({ value, onChange }) {
             </span>
             <span className="font-medium">その場で録音する</span>
             <span className="text-xs text-muted-foreground">
-              講義中にスマホやパソコンのマイクで録音します
+              録音しながら文字起こしが伸びていきます
             </span>
           </button>
 
