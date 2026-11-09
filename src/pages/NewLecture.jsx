@@ -32,9 +32,19 @@ export default function NewLecture() {
     let created = null;
 
     try {
-      const extension = capture.source === "recording" ? "webm" : capture.blob.name?.split(".").pop() || "mp3";
+      // .weba など文字起こしが扱えない拡張子にならないよう、保存する形式を整える
+      const SUPPORTED = ["flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "oga", "ogg", "wav", "webm"];
+      const rawExtension = (capture.blob.name?.split(".").pop() || "").toLowerCase();
+      const isWebm = (capture.blob.type || "").includes("webm") || rawExtension === "weba";
+      const extension = isWebm
+        ? "webm"
+        : capture.source === "recording"
+          ? "m4a"
+          : SUPPORTED.includes(rawExtension)
+            ? rawExtension
+            : "mp3";
       const file = new File([capture.blob], `lecture-${Date.now()}.${extension}`, {
-        type: capture.blob.type || "audio/mpeg"
+        type: isWebm ? "video/webm" : capture.blob.type || "audio/mpeg"
       });
       const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
 

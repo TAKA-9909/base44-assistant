@@ -31,6 +31,25 @@ const NOTE_SCHEMA = {
   required: ['summary', 'key_points', 'outline', 'terms']
 };
 
+const SUPPORTED_FORMATS = ['flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm'];
+
+// 録音ファイルが .weba など未対応の拡張子で保存されている場合は、.webm として保存し直す
+async function normalizeAudioUrl(base44, audioUrl) {
+  const extension = (audioUrl.split('?')[0].split('.').pop() || '').toLowerCase();
+  if (SUPPORTED_FORMATS.includes(extension)) return audioUrl;
+
+  try {
+    const response = await fetch(audioUrl);
+    if (!response.ok) return audioUrl;
+    const blob = await response.blob();
+    const file = new File([blob], 'lecture.webm', { type: 'video/webm' });
+    const uploaded = await base44.asServiceRole.integrations.Core.UploadPublicFile({ file });
+    return uploaded?.file_url || audioUrl;
+  } catch {
+    return audioUrl;
+  }
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -48,7 +67,7 @@ export default async function (req) {
     const title = typeof body?.title === 'string' ? body.title.slice(0, 200) : '';
 
     const transcriptRaw = await base44.asServiceRole.integrations.Core.TranscribeAudio({
-      audio_url: audioUrl
+      audio_url: await normalizeAudioUrl(base44, audioUrl)
     });
     const transcript = typeof transcriptRaw === 'string' ? transcriptRaw.trim() : '';
     if (!transcript) {
