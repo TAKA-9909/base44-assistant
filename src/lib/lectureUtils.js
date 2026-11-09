@@ -77,6 +77,35 @@ export async function transcribeAudioUrl(audioUrl) {
   return data.transcript || "";
 }
 
+// 長い文字起こしはそのままでは保存できないため、テキストファイルにして URL を持つ
+const MAX_STORED_TRANSCRIPT = 15000;
+
+async function storeTranscript(noteId, text) {
+  if (text.length <= MAX_STORED_TRANSCRIPT) {
+    return { transcript: text, transcript_url: "" };
+  }
+
+  const file = new File([text], `transcript-${noteId}.txt`, {
+    type: "text/plain;charset=utf-8"
+  });
+  const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+  return { transcript: "", transcript_url: file_url };
+}
+
+// 保存された文字起こしを、必要ならファイルから読み込む
+export async function loadTranscript(note) {
+  if (!note) return "";
+  if (note.transcript) return note.transcript;
+  if (!note.transcript_url) return "";
+  try {
+    const response = await fetch(note.transcript_url);
+    if (!response.ok) return "";
+    return await response.text();
+  } catch {
+    return "";
+  }
+}
+
 // 文字起こし済みの内容からノートを作る
 export async function generateNoteFromTranscript({ noteId, transcript, title, course }) {
   const text = (transcript || "").trim();
@@ -91,8 +120,10 @@ export async function generateNoteFromTranscript({ noteId, transcript, title, co
   const data = response?.data || {};
   if (data.error) throw new Error(data.error);
 
+  const stored = await storeTranscript(noteId, text);
+
   await base44.entities.LectureNote.update(noteId, {
-    transcript: text,
+    ...stored,
     summary: data.summary || "",
     key_points: data.key_points || [],
     outline: data.outline || [],

@@ -22,7 +22,13 @@ import NoteMenuButton from "@/components/notes/NoteMenuButton";
 import NotePaper from "@/components/notes/NotePaper";
 import { createTextBlock, DEFAULT_STYLE, parseCanvas } from "@/lib/notebookCanvas";
 import { cn } from "@/lib/utils";
-import { formatDate, formatDuration, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
+import {
+  formatDate,
+  formatDuration,
+  generateNote,
+  loadTranscript,
+  noteErrorMessage
+} from "@/lib/lectureUtils";
 
 // 3つのタブは同じ背景のまま、選択中のラベルにだけマーカーを引く
 const TAB_TRIGGER =
@@ -32,6 +38,7 @@ export default function NoteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [note, setNote] = useState(null);
+  const [transcript, setTranscript] = useState("");
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
   const [retrying, setRetrying] = useState(false);
@@ -42,6 +49,7 @@ export default function NoteDetail() {
     try {
       const data = await base44.entities.LectureNote.get(id);
       setNote(data);
+      setTranscript(await loadTranscript(data));
     } catch {
       setMissing(true);
     } finally {
@@ -80,7 +88,7 @@ export default function NoteDetail() {
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(note.transcript || "");
+    await navigator.clipboard.writeText(transcript || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -248,10 +256,10 @@ export default function NoteDetail() {
           </TabsContent>
 
           <TabsContent value="transcript" className="px-6 py-7 sm:px-8">
-            {note.transcript ? (
+            {transcript ? (
               <div className="space-y-4">
                 <p className="max-h-[560px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8">
-                  {note.transcript}
+                  {transcript}
                 </p>
                 <Button variant="outline" size="sm" onClick={handleCopy} className="rounded-full">
                   {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : null}

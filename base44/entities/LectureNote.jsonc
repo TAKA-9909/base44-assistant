@@ -48,6 +48,9 @@
     "transcript": {
       "type": "string"
     },
+    "transcript_url": {
+      "type": "string"
+    },
     "summary": {
       "type": "string"
     },
