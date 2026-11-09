@@ -40,11 +40,11 @@ export default function NewLecture() {
 
     try {
       // 録音中に区切って保存した音声は、そのまま使う（文字起こしも録音中に済んでいる）
-      const liveParts = (capture.parts || []).filter((part) => part.url);
+      const liveParts = (capture.parts || []).filter((part) => (part.urls || []).length > 0);
       let audioUrls;
 
       if (liveParts.length > 0) {
-        audioUrls = liveParts.map((part) => part.url);
+        audioUrls = liveParts.flatMap((part) => part.urls);
       } else {
         // .weba など文字起こしが扱えない拡張子にならないよう、保存する形式を整える
         const SUPPORTED = ["flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "oga", "ogg", "wav", "webm"];

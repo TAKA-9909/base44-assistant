@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { splitAudioFile } from "@/lib/audioSplit";
 
 export function formatDuration(seconds) {
   const total = Number(seconds) || 0;
@@ -103,6 +104,28 @@ export async function generateNoteFromTranscript({ noteId, transcript, title, co
   return data;
 }
 
+const isTooLargeError = (error) => /too large|25\s*MB/i.test(error?.message || "");
+
+// 大きすぎると言われたら、端末で分割してから送り直す
+async function transcribeSafely(audioUrl) {
+  try {
+    return await transcribeAudioUrl(audioUrl);
+  } catch (error) {
+    if (!isTooLargeError(error)) throw error;
+  }
+
+  const blob = await (await fetch(audioUrl)).blob();
+  const extension = (audioUrl.split("?")[0].split(".").pop() || "mp3").toLowerCase();
+  const file = new File([blob], `lecture.${extension}`, { type: blob.type || "audio/mpeg" });
+  const urls = await uploadAudioFiles(await splitAudioFile(file));
+
+  const texts = [];
+  for (const url of urls) {
+    texts.push(await transcribeAudioUrl(url));
+  }
+  return texts.filter(Boolean).join("\n");
+}
+
 // 分割された音声を1つずつ文字起こしし、まとめてからノートを作る
 export async function generateNote({ noteId, audioUrls, title, course }) {
   const urls = (audioUrls || []).filter(Boolean);
@@ -110,7 +133,7 @@ export async function generateNote({ noteId, audioUrls, title, course }) {
 
   const parts = [];
   for (const audioUrl of urls) {
-    parts.push(await transcribeAudioUrl(audioUrl));
+    parts.push(await transcribeSafely(audioUrl));
   }
 
   const transcript = parts.filter(Boolean).join("\n");

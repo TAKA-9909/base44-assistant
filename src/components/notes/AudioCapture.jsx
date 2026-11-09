@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, Square, Upload, RotateCcw, Loader2 } from "lucide-react";
-import { formatClock, formatDuration, transcribeAudioUrl, uploadAudio } from "@/lib/lectureUtils";
-import { needsSplit } from "@/lib/audioSplit";
+import {
+  formatClock,
+  formatDuration,
+  transcribeAudioUrl,
+  uploadAudioFiles
+} from "@/lib/lectureUtils";
+import { needsSplit, splitAudioFile } from "@/lib/audioSplit";
 import AudioPlayer from "./AudioPlayer";
 import LiveTranscriptPanel from "./LiveTranscriptPanel";
 
@@ -62,8 +67,12 @@ export default function AudioCapture({ value, onChange }) {
       const file = new File([slot.blob], `lecture-part-${slot.index}.${extension}`, {
         type: slot.blob.type || "audio/webm"
       });
-      slot.url = await uploadAudio(file);
-      slot.transcript = await transcribeAudioUrl(slot.url);
+      // 画面を閉じていた等で区間が長くなったときも、送る前に分ける
+      const parts = await splitAudioFile(file);
+      slot.urls = await uploadAudioFiles(parts);
+      const texts = [];
+      for (const url of slot.urls) texts.push(await transcribeAudioUrl(url));
+      slot.transcript = texts.filter(Boolean).join("\n");
       setLiveText((prev) => (prev ? `${prev}\n${slot.transcript}` : slot.transcript));
     } catch {
       // 失敗した区間は文字起こしなしで残し、ノート作成のときにやり直す
@@ -79,12 +88,12 @@ export default function AudioCapture({ value, onChange }) {
       setFinishing(false);
       return;
     }
-    const parts = slots.filter((slot) => slot.url);
+    const recorded = slots.filter((slot) => slot.urls.length > 0);
     const wholeBlob =
-      parts.length === 0
+      recorded.length === 0
         ? new Blob(slots.map((slot) => slot.blob), { type: slots[0].blob.type || "audio/webm" })
         : slots[0].blob;
-    const url = parts.length > 0 ? parts[0].url : URL.createObjectURL(wholeBlob);
+    const url = recorded.length > 0 ? recorded[0].urls[0] : URL.createObjectURL(wholeBlob);
 
     setFinishing(false);
     onChange({
@@ -92,12 +101,12 @@ export default function AudioCapture({ value, onChange }) {
       url,
       source: "recording",
       duration: elapsedRef.current,
-      parts: parts.map((slot) => ({ url: slot.url, transcript: slot.transcript }))
+      parts: recorded.map((slot) => ({ urls: slot.urls, transcript: slot.transcript }))
     });
   };
 
   const handleSegment = (blob) => {
-    const slot = { blob, url: "", transcript: "", index: slotsRef.current.length + 1 };
+    const slot = { blob, urls: [], transcript: "", index: slotsRef.current.length + 1 };
     slotsRef.current.push(slot);
     pendingRef.current += 1;
     setProcessing(true);
@@ -219,7 +228,10 @@ export default function AudioCapture({ value, onChange }) {
             {value.source === "recording" ? "録り直す" : "選び直す"}
           </Button>
         </div>
-        <AudioPlayer src={value.url} urls={value.parts?.map((part) => part.url)} />
+        <AudioPlayer
+          src={value.url}
+          urls={value.parts?.flatMap((part) => part.urls || [])}
+        />
       </div>
     );
   }

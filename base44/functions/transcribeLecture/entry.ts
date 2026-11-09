@@ -145,6 +145,9 @@ export default async function (req) {
     const note = await buildNote(base44, { transcript, course, title });
     return Response.json({ transcript, ...note });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    const message = /too large|25\s*MB/i.test(error?.message || '')
+      ? '音声が大きすぎて文字起こしできませんでした。25MB以下の音声に分けてお試しください。'
+      : error.message;
+    return Response.json({ error: message }, { status: 500 });
   }
 }

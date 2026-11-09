@@ -1,6 +1,6 @@
 // 文字起こしできる音声は 25MB まで。
 // それを超える音声は、端末の中で読みやすい WAV に変換しながら分割して送る。
-const MAX_PART_BYTES = 20 * 1024 * 1024;
+const MAX_PART_BYTES = 18 * 1024 * 1024;
 const TARGET_SAMPLE_RATE = 16000;
 
 function encodeWav(samples, sampleRate) {
@@ -38,23 +38,48 @@ export function needsSplit(file) {
   return !!file && file.size > MAX_PART_BYTES;
 }
 
-// 25MB 以下ならそのまま、超えていれば 20MB ずつに分けて返す
+const isMp3 = (file) =>
+  /mp3|mpeg/i.test(file.type || "") || /\.mp3$/i.test(file.name || "");
+
+// 読み込めない形式でも、mp3 なら位置で区切って送れる
+function splitByBytes(file, partBytes) {
+  const extension = (file.name?.split(".").pop() || "mp3").toLowerCase();
+  const parts = [];
+  for (let start = 0; start < file.size; start += partBytes) {
+    const end = Math.min(start + partBytes, file.size);
+    parts.push(
+      new File([file.slice(start, end)], `lecture-part-${parts.length + 1}.${extension}`, {
+        type: file.type || "audio/mpeg"
+      })
+    );
+  }
+  return parts;
+}
+
+// 25MB 以下ならそのまま、超えていれば 18MB ずつに分けて返す
 export async function splitAudioFile(file) {
   if (!needsSplit(file)) return [file];
 
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextClass) {
+    if (isMp3(file)) return splitByBytes(file, MAX_PART_BYTES);
     throw new Error("この端末では音声を分割できません。25MB以下のファイルでお試しください。");
   }
 
   const context = new AudioContextClass({ sampleRate: TARGET_SAMPLE_RATE });
-  let decoded;
+  let decoded = null;
   try {
     decoded = await context.decodeAudioData(await file.arrayBuffer());
   } catch {
-    throw new Error("音声を読み込めませんでした。25MB以下のファイルに分けてお試しください。");
+    decoded = null;
   } finally {
     context.close?.();
+  }
+
+  // 読み込めない音声は、区切って送るだけでも文字起こしできる形式なら分ける
+  if (!decoded) {
+    if (isMp3(file)) return splitByBytes(file, MAX_PART_BYTES);
+    throw new Error("音声を読み込めませんでした。25MB以下のファイルに分けてお試しください。");
   }
 
   const samples = decoded.getChannelData(0);
