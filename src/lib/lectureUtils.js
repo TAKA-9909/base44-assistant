@@ -105,15 +105,21 @@ export async function generateNoteFromTranscript({ noteId, transcript, title, co
 }
 
 const isTooLargeError = (error) => /too large|25\s*MB/i.test(error?.message || "");
+const LIMIT_BYTES = 24 * 1024 * 1024;
 
-// 大きすぎると言われたら、端末で分割してから送り直す
-async function transcribeSafely(audioUrl) {
+// 大きすぎる音声かどうかを、送る前に確認する
+async function isTooLargeUrl(audioUrl) {
   try {
-    return await transcribeAudioUrl(audioUrl);
-  } catch (error) {
-    if (!isTooLargeError(error)) throw error;
+    const head = await fetch(audioUrl, { method: "HEAD" });
+    const size = Number(head.headers.get("content-length") || 0);
+    return size > LIMIT_BYTES;
+  } catch {
+    return false;
   }
+}
 
+// 端末で分割してから1つずつ文字起こしする
+async function transcribeBySplitting(audioUrl) {
   const blob = await (await fetch(audioUrl)).blob();
   const extension = (audioUrl.split("?")[0].split(".").pop() || "mp3").toLowerCase();
   const file = new File([blob], `lecture.${extension}`, { type: blob.type || "audio/mpeg" });
@@ -124,6 +130,21 @@ async function transcribeSafely(audioUrl) {
     texts.push(await transcribeAudioUrl(url));
   }
   return texts.filter(Boolean).join("\n");
+}
+
+// 25MB を超える音声は、必ず分割してから文字起こしする
+async function transcribeSafely(audioUrl) {
+  if (await isTooLargeUrl(audioUrl)) {
+    return transcribeBySplitting(audioUrl);
+  }
+
+  try {
+    return await transcribeAudioUrl(audioUrl);
+  } catch (error) {
+    if (!isTooLargeError(error)) throw error;
+  }
+
+  return transcribeBySplitting(audioUrl);
 }
 
 // 分割された音声を1つずつ文字起こしし、まとめてからノートを作る
