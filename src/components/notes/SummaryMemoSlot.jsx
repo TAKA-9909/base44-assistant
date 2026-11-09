@@ -11,6 +11,8 @@ export default function SummaryMemoSlot({ anchor, memos, onChange }) {
   const addMemo = () => onChange([...memos, { id: newId(), anchor, text: "" }]);
   const saveMemo = (id, text) =>
     onChange(memos.map((memo) => (memo.id === id ? { ...memo, text } : memo)));
+  const moveMemo = (id, position) =>
+    onChange(memos.map((memo) => (memo.id === id ? { ...memo, ...position } : memo)));
   const deleteMemo = (id) => onChange(memos.filter((memo) => memo.id !== id));
 
   return (
@@ -21,6 +23,7 @@ export default function SummaryMemoSlot({ anchor, memos, onChange }) {
           memo={memo}
           angle={index % 2 === 0 ? -1.4 : 1.2}
           onSave={(text) => saveMemo(memo.id, text)}
+          onMove={(position) => moveMemo(memo.id, position)}
           onDelete={() => deleteMemo(memo.id)}
         />
       ))}

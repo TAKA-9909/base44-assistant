@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { X } from "lucide-react";
+import { startLongPressDrag } from "@/lib/longPressDrag";
 
-// まとめの隙間に貼る付箋メモ
-export default function StickyMemo({ memo, angle = 0, onSave, onDelete }) {
+// まとめの隙間に貼る付箋メモ（長押ししたままドラッグで移動できる）
+export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }) {
   const [text, setText] = useState(memo.text || "");
   const [editing, setEditing] = useState(!memo.text);
+  const noteRef = useRef(null);
+  const draggedRef = useRef(false);
 
   const commit = () => {
     if (!text.trim()) {
@@ -15,10 +18,48 @@ export default function StickyMemo({ memo, angle = 0, onSave, onDelete }) {
     if (text !== memo.text) onSave(text);
   };
 
+  const handlePress = (event) => {
+    const element = noteRef.current;
+    if (!element) return;
+
+    const base = { x: memo.x || 0, y: memo.y || 0 };
+    let position = base;
+
+    startLongPressDrag(event, {
+      onActivate: () => {
+        draggedRef.current = true;
+        const active = document.activeElement;
+        if (active instanceof HTMLElement && element.contains(active)) active.blur();
+        element.style.zIndex = "30";
+      },
+      onDrag: (dx, dy) => {
+        position = { x: base.x + dx, y: base.y + dy };
+        element.style.transform =
+          `translate(${position.x}px, ${position.y}px) rotate(${angle}deg)`;
+      },
+      onEnd: () => {
+        element.style.zIndex = "";
+        if (position.x !== base.x || position.y !== base.y) onMove(position);
+        window.setTimeout(() => {
+          draggedRef.current = false;
+        }, 0);
+      }
+    });
+  };
+
+  const startEditing = () => {
+    if (draggedRef.current) return;
+    setEditing(true);
+  };
+
   return (
     <div
-      style={{ transform: `rotate(${angle}deg)` }}
-      className="relative w-44 shrink-0 rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15"
+      ref={noteRef}
+      onPointerDown={handlePress}
+      style={{
+        transform: `translate(${memo.x || 0}px, ${memo.y || 0}px) rotate(${angle}deg)`
+      }}
+      className="relative w-44 shrink-0 cursor-grab rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15"
     >
       <button
         type="button"
@@ -46,7 +87,7 @@ export default function StickyMemo({ memo, angle = 0, onSave, onDelete }) {
       ) : (
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onClick={startEditing}
           className="w-full whitespace-pre-wrap text-left font-hand text-[13px] leading-6 text-sticky-foreground"
         >
           {text}
