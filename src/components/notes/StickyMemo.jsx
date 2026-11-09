@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { X } from "lucide-react";
+import { GripHorizontal, X } from "lucide-react";
 import { startLongPressDrag } from "@/lib/longPressDrag";
 import { cn } from "@/lib/utils";
 
@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }) {
   const [text, setText] = useState(memo.text || "");
   const [editing, setEditing] = useState(!memo.text);
+  const [grabbing, setGrabbing] = useState(false);
   const noteRef = useRef(null);
   const draggedRef = useRef(false);
+  const draggedUntilRef = useRef(0);
 
   const commit = () => {
     if (!text.trim()) {
@@ -22,9 +24,11 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
   const handlePress = (event) => {
     const element = noteRef.current;
     if (!element || event.button > 0) return;
-    // 文章を書きこんでいるとき以外は、ブラウザ標準の文字選択を止める
+    // 書き込み中の文章では文字の選択を優先し、移動は上部のつまみから行う
     const isTextarea = event.target instanceof HTMLElement && event.target.tagName === "TEXTAREA";
-    if (!isTextarea) event.preventDefault();
+    if (isTextarea && editing) return;
+    // 長押しでブラウザの文字選択やメニューが出ないようにする
+    event.preventDefault();
 
     const base = { x: memo.x || 0, y: memo.y || 0 };
     let position = base;
@@ -32,6 +36,7 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
     startLongPressDrag(event, {
       onActivate: () => {
         draggedRef.current = true;
+        setGrabbing(true);
         window.getSelection()?.removeAllRanges();
         document.body.style.userSelect = "none";
         document.body.style.webkitUserSelect = "none";
@@ -47,16 +52,17 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
         document.body.style.webkitUserSelect = "";
         window.getSelection()?.removeAllRanges();
         element.style.zIndex = "";
+        setGrabbing(false);
         if (position.x !== base.x || position.y !== base.y) onMove(position);
-        window.setTimeout(() => {
-          draggedRef.current = false;
-        }, 0);
+        // ドラッグ直後にタップ扱いで編集モードに入らないよう、少しだけ待つ
+        draggedUntilRef.current = Date.now() + 400;
+        draggedRef.current = false;
       }
     });
   };
 
   const startEditing = () => {
-    if (draggedRef.current) return;
+    if (draggedRef.current || Date.now() < draggedUntilRef.current) return;
     setEditing(true);
   };
 
@@ -64,12 +70,14 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
     <div
       ref={noteRef}
       onPointerDown={handlePress}
+      onContextMenu={(event) => event.preventDefault()}
       style={{
         transform: `translate(${memo.x || 0}px, ${memo.y || 0}px) rotate(${angle}deg)`
       }}
       className={cn(
-        "relative w-44 shrink-0 cursor-grab touch-none rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15",
-        !editing && "select-none"
+        "relative w-44 shrink-0 touch-none rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15",
+        !editing && "select-none",
+        grabbing ? "cursor-grabbing" : "cursor-grab"
       )}
     >
       <button
@@ -84,6 +92,13 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
       >
         <X className="h-3 w-3" />
       </button>
+
+      <div
+        aria-hidden
+        className="mb-1 -mt-1 flex h-4 items-center justify-center text-sticky-foreground/30"
+      >
+        <GripHorizontal className="h-3.5 w-3.5" />
+      </div>
 
       {editing ? (
         <textarea

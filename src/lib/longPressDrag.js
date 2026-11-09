@@ -1,40 +1,57 @@
-const HOLD_MS = 350;
-const MOVE_TOLERANCE = 8;
+const HOLD_MS = 300;
+const MOVE_TOLERANCE = 16;
 
-// 長押ししたままドラッグすると移動できる。長押し前に動いた場合はキャンセルする。
+// 長押ししたままドラッグすると移動できる。長押しが成立する前に大きく動いた場合だけキャンセルする。
 export function startLongPressDrag(event, { onActivate, onDrag, onEnd }) {
+  const pointerId = event.pointerId;
   const startX = event.clientX;
   const startY = event.clientY;
   let dragging = false;
+  let finished = false;
   let timer = null;
 
-  const finish = () => {
+  // 別の指（マルチタッチ）の動きには反応しない
+  const isOtherPointer = (ev) =>
+    ev && pointerId != null && ev.pointerId != null && ev.pointerId !== pointerId;
+
+  const cleanup = () => {
     window.clearTimeout(timer);
     window.removeEventListener("pointermove", handleMove);
-    window.removeEventListener("pointerup", finish);
-    window.removeEventListener("pointercancel", finish);
-    if (dragging) onEnd?.();
+    window.removeEventListener("pointerup", handleEnd);
+    window.removeEventListener("pointercancel", handleEnd);
+    window.removeEventListener("blur", handleEnd);
   };
 
-  const handleMove = (moveEvent) => {
+  function handleEnd(ev) {
+    if (isOtherPointer(ev) || finished) return;
+    finished = true;
+    cleanup();
+    if (dragging) onEnd?.();
+  }
+
+  function handleMove(ev) {
+    if (isOtherPointer(ev) || finished) return;
     if (!dragging) {
-      if (
-        Math.abs(moveEvent.clientX - startX) > MOVE_TOLERANCE ||
-        Math.abs(moveEvent.clientY - startY) > MOVE_TOLERANCE
-      ) {
-        finish();
+      const moved =
+        Math.abs(ev.clientX - startX) > MOVE_TOLERANCE ||
+        Math.abs(ev.clientY - startY) > MOVE_TOLERANCE;
+      if (moved) {
+        finished = true;
+        cleanup();
       }
       return;
     }
-    onDrag(moveEvent.clientX - startX, moveEvent.clientY - startY);
-  };
+    onDrag(ev.clientX - startX, ev.clientY - startY);
+  }
 
   timer = window.setTimeout(() => {
+    if (finished) return;
     dragging = true;
     onActivate?.();
   }, HOLD_MS);
 
   window.addEventListener("pointermove", handleMove);
-  window.addEventListener("pointerup", finish);
-  window.addEventListener("pointercancel", finish);
+  window.addEventListener("pointerup", handleEnd);
+  window.addEventListener("pointercancel", handleEnd);
+  window.addEventListener("blur", handleEnd);
 }
