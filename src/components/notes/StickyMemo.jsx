@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { X } from "lucide-react";
 import { startLongPressDrag } from "@/lib/longPressDrag";
+import { cn } from "@/lib/utils";
 
 // まとめの隙間に貼る付箋メモ（長押ししたままドラッグで移動できる）
 export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }) {
@@ -20,7 +21,10 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
 
   const handlePress = (event) => {
     const element = noteRef.current;
-    if (!element) return;
+    if (!element || event.button > 0) return;
+    // 文章を書きこんでいるとき以外は、ブラウザ標準の文字選択を止める
+    const isTextarea = event.target instanceof HTMLElement && event.target.tagName === "TEXTAREA";
+    if (!isTextarea) event.preventDefault();
 
     const base = { x: memo.x || 0, y: memo.y || 0 };
     let position = base;
@@ -28,8 +32,9 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
     startLongPressDrag(event, {
       onActivate: () => {
         draggedRef.current = true;
-        const active = document.activeElement;
-        if (active instanceof HTMLElement && element.contains(active)) active.blur();
+        window.getSelection()?.removeAllRanges();
+        document.body.style.userSelect = "none";
+        document.body.style.webkitUserSelect = "none";
         element.style.zIndex = "30";
       },
       onDrag: (dx, dy) => {
@@ -38,6 +43,9 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
           `translate(${position.x}px, ${position.y}px) rotate(${angle}deg)`;
       },
       onEnd: () => {
+        document.body.style.userSelect = "";
+        document.body.style.webkitUserSelect = "";
+        window.getSelection()?.removeAllRanges();
         element.style.zIndex = "";
         if (position.x !== base.x || position.y !== base.y) onMove(position);
         window.setTimeout(() => {
@@ -59,7 +67,10 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
       style={{
         transform: `translate(${memo.x || 0}px, ${memo.y || 0}px) rotate(${angle}deg)`
       }}
-      className="relative w-44 shrink-0 cursor-grab rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15"
+      className={cn(
+        "relative w-44 shrink-0 cursor-grab touch-none rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15",
+        !editing && "select-none"
+      )}
     >
       <button
         type="button"
