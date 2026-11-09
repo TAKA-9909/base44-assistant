@@ -10,6 +10,7 @@ import {
 import { needsSplit, splitAudioFile } from "@/lib/audioSplit";
 import AudioPlayer from "./AudioPlayer";
 import LiveTranscriptPanel from "./LiveTranscriptPanel";
+import RecordingMemo from "./RecordingMemo";
 
 // 30秒ごとに区切って、録音しながら文字起こししていく
 const SEGMENT_SECONDS = 30;
@@ -32,7 +33,7 @@ const readDuration = (url) =>
 
 const segmentExtension = (mimeType) => ((mimeType || "").includes("mp4") ? "m4a" : "webm");
 
-export default function AudioCapture({ value, onChange }) {
+export default function AudioCapture({ value, onChange, memo = "", onMemoChange }) {
   const [recording, setRecording] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -232,6 +233,9 @@ export default function AudioCapture({ value, onChange }) {
           src={value.url}
           urls={value.parts?.flatMap((part) => part.urls || [])}
         />
+        <div className="mt-4">
+          <RecordingMemo value={memo} onChange={onMemoChange} />
+        </div>
       </div>
     );
   }
@@ -252,6 +256,7 @@ export default function AudioCapture({ value, onChange }) {
             停止して保存
           </Button>
           <LiveTranscriptPanel text={liveText} processing={processing} />
+          <RecordingMemo value={memo} onChange={onMemoChange} />
         </div>
       ) : finishing ? (
         <div className="flex items-center justify-center gap-3 rounded-3xl border border-border/70 bg-card p-8">

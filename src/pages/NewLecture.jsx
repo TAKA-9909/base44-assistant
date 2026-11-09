@@ -23,6 +23,7 @@ export default function NewLecture() {
   const [title, setTitle] = useState("");
   const [course, setCourse] = useState("");
   const [lectureDate, setLectureDate] = useState(new Date().toISOString().slice(0, 10));
+  const [memo, setMemo] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState("");
 
@@ -73,6 +74,7 @@ export default function NewLecture() {
         audio_url: audioUrls[0],
         audio_urls: audioUrls,
         duration_seconds: capture.duration || 0,
+        content: memo.trim(),
         status: "processing"
       });
 
@@ -131,7 +133,12 @@ export default function NewLecture() {
           onSubmit={handleSubmit}
           className="space-y-8 border-t border-border/70 px-6 py-7 sm:px-8"
         >
-          <AudioCapture value={capture} onChange={setCapture} />
+          <AudioCapture
+            value={capture}
+            onChange={setCapture}
+            memo={memo}
+            onMemoChange={setMemo}
+          />
 
           <div className="space-y-5">
             <div className="space-y-2">
