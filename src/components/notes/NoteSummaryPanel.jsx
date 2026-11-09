@@ -5,34 +5,24 @@ const SectionTitle = ({ children }) => (
   <h3 className="mb-4 font-display text-base tracking-wide text-foreground">{children}</h3>
 );
 
-// 録音中に書いたメモは「要約」下のメモ欄にまとめて貼る
-const SUMMARY_MEMO_ANCHORS = ["summary", "recording"];
+// どの見出しに貼られたメモも、ページ最後のメモ欄にまとめて貼る
+const MEMO_ANCHORS = ["summary", "recording", "points", "outline", "terms"];
 
 export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () => {} }) {
   const hasContent =
     note.summary || note.key_points?.length || note.outline?.length || note.terms?.length;
-  const summaryMemos = memos.filter((memo) => SUMMARY_MEMO_ANCHORS.includes(memo.anchor));
+  const hasMemos = memos.some((memo) => MEMO_ANCHORS.includes(memo.anchor));
 
-  if (!hasContent && summaryMemos.length === 0) {
+  if (!hasContent && !hasMemos) {
     return <p className="text-sm text-muted-foreground">まだまとめがありません。</p>;
   }
 
   return (
     <div className="space-y-10">
-      {(note.summary || summaryMemos.length > 0) && (
+      {note.summary && (
         <section>
-          {note.summary && (
-            <>
-              <SectionTitle>要約</SectionTitle>
-              <p className="text-[15px] leading-8 text-foreground/90">{note.summary}</p>
-            </>
-          )}
-          <SummaryMemoSlot
-            anchor="summary"
-            anchors={SUMMARY_MEMO_ANCHORS}
-            memos={memos}
-            onChange={onMemosChange}
-          />
+          <SectionTitle>要約</SectionTitle>
+          <p className="text-[15px] leading-8 text-foreground/90">{note.summary}</p>
         </section>
       )}
 
@@ -49,7 +39,6 @@ export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () 
               </li>
             ))}
           </ul>
-          <SummaryMemoSlot anchor="points" memos={memos} onChange={onMemosChange} />
         </section>
       )}
 
@@ -68,7 +57,6 @@ export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () 
               </div>
             ))}
           </div>
-          <SummaryMemoSlot anchor="outline" memos={memos} onChange={onMemosChange} />
         </section>
       )}
 
@@ -83,9 +71,18 @@ export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () 
               </div>
             ))}
           </dl>
-          <SummaryMemoSlot anchor="terms" memos={memos} onChange={onMemosChange} />
         </section>
       )}
+
+      <section className="border-t border-border/70 pt-8">
+        <SectionTitle>メモ</SectionTitle>
+        <SummaryMemoSlot
+          anchor="summary"
+          anchors={MEMO_ANCHORS}
+          memos={memos}
+          onChange={onMemosChange}
+        />
+      </section>
     </div>
   );
 }
