@@ -1,10 +1,11 @@
 import React from "react";
+import SummaryMemoSlot from "./SummaryMemoSlot";
 
 const SectionTitle = ({ children }) => (
   <h3 className="mb-4 font-display text-base tracking-wide text-foreground">{children}</h3>
 );
 
-export default function NoteSummaryPanel({ note }) {
+export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () => {} }) {
   const hasContent =
     note.summary || note.key_points?.length || note.outline?.length || note.terms?.length;
 
@@ -18,6 +19,7 @@ export default function NoteSummaryPanel({ note }) {
         <section>
           <SectionTitle>要約</SectionTitle>
           <p className="text-[15px] leading-8 text-foreground/90">{note.summary}</p>
+          <SummaryMemoSlot anchor="summary" memos={memos} onChange={onMemosChange} />
         </section>
       )}
 
@@ -34,6 +36,7 @@ export default function NoteSummaryPanel({ note }) {
               </li>
             ))}
           </ul>
+          <SummaryMemoSlot anchor="points" memos={memos} onChange={onMemosChange} />
         </section>
       )}
 
@@ -52,6 +55,7 @@ export default function NoteSummaryPanel({ note }) {
               </div>
             ))}
           </div>
+          <SummaryMemoSlot anchor="outline" memos={memos} onChange={onMemosChange} />
         </section>
       )}
 
@@ -66,6 +70,7 @@ export default function NoteSummaryPanel({ note }) {
               </div>
             ))}
           </dl>
+          <SummaryMemoSlot anchor="terms" memos={memos} onChange={onMemosChange} />
         </section>
       )}
     </div>

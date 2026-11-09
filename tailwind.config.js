@@ -107,6 +107,7 @@ module.exports = {
   			heading: ['var(--font-heading)'],
   			body: ['var(--font-body)'],
   			display: ['var(--font-display)'],
+  			hand: ['var(--font-hand)'],
   			mono: ['var(--font-mono)']
   		},
   		keyframes: {

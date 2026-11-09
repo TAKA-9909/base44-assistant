@@ -19,7 +19,12 @@
         "upload",
         "manual"
       ],
-      "default": "recording"
+      "default": "recording",
+      "enumColors": [
+        "red",
+        "blue",
+        "purple"
+      ]
     },
     "audio_url": {
       "type": "string"
@@ -40,7 +45,12 @@
         "ready",
         "failed"
       ],
-      "default": "processing"
+      "default": "processing",
+      "enumColors": [
+        "yellow",
+        "green",
+        "red"
+      ]
     },
     "error_message": {
       "type": "string"
@@ -86,6 +96,23 @@
             "type": "string"
           },
           "meaning": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary_memos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "anchor": {
+            "type": "string"
+          },
+          "text": {
             "type": "string"
           }
         }

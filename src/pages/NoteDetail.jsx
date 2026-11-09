@@ -93,6 +93,12 @@ export default function NoteDetail() {
     setTimeout(() => setCopied(false), 2500);
   };
 
+  // まとめの隙間に貼った付箋メモを保存する
+  const saveMemos = (memos) => {
+    setNote((current) => ({ ...current, summary_memos: memos }));
+    return base44.entities.LectureNote.update(id, { summary_memos: memos });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-24">
@@ -252,7 +258,11 @@ export default function NoteDetail() {
           </div>
 
           <TabsContent value="summary" className="px-6 py-7 sm:px-8">
-            <NoteSummaryPanel note={note} />
+            <NoteSummaryPanel
+              note={note}
+              memos={note.summary_memos || []}
+              onMemosChange={saveMemos}
+            />
           </TabsContent>
 
           <TabsContent value="transcript" className="px-6 py-7 sm:px-8">
