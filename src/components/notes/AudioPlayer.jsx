@@ -3,7 +3,12 @@ import { Mic, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // 録音を再生するための細いプレイヤー。右端は children（メニュー）を差し込める
-export default function AudioPlayer({ src, children }) {
+export default function AudioPlayer({ src, urls, children }) {
+  // 分割して保存された音声は、順番に続けて再生する
+  const tracks = (urls && urls.length > 0 ? urls : [src]).filter(Boolean);
+  const [index, setIndex] = useState(0);
+  const current = tracks[Math.min(index, tracks.length - 1)];
+  const pendingPlay = useRef(false);
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -13,9 +18,24 @@ export default function AudioPlayer({ src, children }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const handleLoaded = () => setDuration(audio.duration || 0);
+    setProgress(0);
+    setDuration(0);
+    const handleLoaded = () => {
+      setDuration(audio.duration || 0);
+      if (pendingPlay.current) {
+        pendingPlay.current = false;
+        audio.play();
+        setPlaying(true);
+      }
+    };
     const handleTime = () => setProgress(audio.currentTime || 0);
     const handleEnded = () => {
+      // まだ続きのパートがあれば、そのまま次のパートを再生する
+      if (index < tracks.length - 1) {
+        pendingPlay.current = true;
+        setIndex(index + 1);
+        return;
+      }
       setPlaying(false);
       setProgress(0);
     };
@@ -28,7 +48,7 @@ export default function AudioPlayer({ src, children }) {
       audio.removeEventListener("timeupdate", handleTime);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [src]);
+  }, [current, index, tracks.length]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -101,7 +121,7 @@ export default function AudioPlayer({ src, children }) {
 
       {children}
 
-      <audio ref={audioRef} src={src} preload="metadata" className="hidden" />
+      <audio ref={audioRef} src={current} preload="metadata" className="hidden" />
     </div>
   );
 }

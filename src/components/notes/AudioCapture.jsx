@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, Square, Upload, RotateCcw } from "lucide-react";
 import { formatClock, formatDuration } from "@/lib/lectureUtils";
+import { needsSplit } from "@/lib/audioSplit";
 
 const pickMimeType = () => {
   if (typeof MediaRecorder === "undefined") return "";
@@ -89,11 +90,6 @@ export default function AudioCapture({ value, onChange }) {
     event.target.value = "";
     if (!file) return;
     setError("");
-    // 文字起こしできる音声は 25MB までなので、それを超えるファイルは先に知らせる
-    if (file.size > 25 * 1024 * 1024) {
-      setError("ファイルが大きすぎます（25MBまで）。講義を分けて読み込んでください。");
-      return;
-    }
     const url = URL.createObjectURL(file);
     const duration = await readDuration(url);
     onChange({ blob: file, url, source: "upload", duration });
@@ -109,6 +105,11 @@ export default function AudioCapture({ value, onChange }) {
             </p>
             {value.duration > 0 && (
               <p className="text-xs text-muted-foreground">{formatDuration(value.duration)}</p>
+            )}
+            {needsSplit(value.blob) && (
+              <p className="text-xs text-muted-foreground">
+                大きな音声なので、文字起こしのときに自動で分割します
+              </p>
             )}
           </div>
           <Button variant="ghost" size="sm" onClick={() => onChange(null)}>

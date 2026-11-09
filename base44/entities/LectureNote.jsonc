@@ -24,6 +24,12 @@
     "audio_url": {
       "type": "string"
     },
+    "audio_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "duration_seconds": {
       "type": "number"
     },

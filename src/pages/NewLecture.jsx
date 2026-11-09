@@ -8,7 +8,8 @@ import { Loader2, Sparkles } from "lucide-react";
 import AudioCapture from "@/components/notes/AudioCapture";
 import NotePaper from "@/components/notes/NotePaper";
 import PageNav from "@/components/nav/PageNav";
-import { formatDate, generateNote, noteErrorMessage, uploadAudio } from "@/lib/lectureUtils";
+import { formatDate, generateNote, noteErrorMessage, uploadAudioFiles } from "@/lib/lectureUtils";
+import { splitAudioFile } from "@/lib/audioSplit";
 
 export default function NewLecture() {
   const navigate = useNavigate();
@@ -46,14 +47,17 @@ export default function NewLecture() {
       const file = new File([capture.blob], `lecture-${Date.now()}.${extension}`, {
         type: isWebm ? "video/webm" : capture.blob.type || "audio/mpeg"
       });
-      const file_url = await uploadAudio(file);
+      // 25MB を超える音声は端末の中で分割してから送る
+      const parts = await splitAudioFile(file);
+      const audioUrls = await uploadAudioFiles(parts);
 
       created = await base44.entities.LectureNote.create({
         title: title.trim() || `${formatDate(lectureDate)}の講義`,
         course: course.trim(),
         lecture_date: lectureDate,
         source: capture.source,
-        audio_url: file_url,
+        audio_url: audioUrls[0],
+        audio_urls: audioUrls,
         duration_seconds: capture.duration || 0,
         status: "processing"
       });
@@ -61,7 +65,7 @@ export default function NewLecture() {
       setStep("processing");
       await generateNote({
         noteId: created.id,
-        audioUrl: file_url,
+        audioUrls,
         title: title.trim(),
         course: course.trim()
       });

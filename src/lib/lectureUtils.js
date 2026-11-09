@@ -51,20 +51,50 @@ export async function uploadAudio(file) {
   }
 }
 
-export async function generateNote({ noteId, audioUrl, title, course }) {
-  const payload = { audio_url: audioUrl, title: title || "", course: course || "" };
-  let response;
+export async function uploadAudioFiles(files) {
+  const urls = [];
+  for (const file of files) {
+    urls.push(await uploadAudio(file));
+  }
+  return urls;
+}
+
+const invoke = async (payload) => {
   try {
-    response = await base44.functions.invoke("transcribeLecture", payload);
+    return await base44.functions.invoke("transcribeLecture", payload);
   } catch (error) {
     if (!isNetworkError(error)) throw error;
-    response = await base44.functions.invoke("transcribeLecture", payload);
+    return base44.functions.invoke("transcribeLecture", payload);
   }
+};
+
+// 分割された音声を1つずつ文字起こしし、まとめてからノートを作る
+export async function generateNote({ noteId, audioUrls, title, course }) {
+  const urls = (audioUrls || []).filter(Boolean);
+  if (urls.length === 0) throw new Error("音声が見つかりませんでした。");
+
+  const parts = [];
+  for (const audioUrl of urls) {
+    const response = await invoke({ mode: "transcribe", audio_url: audioUrl });
+    const data = response?.data || {};
+    if (data.error) throw new Error(data.error);
+    if (data.transcript) parts.push(data.transcript);
+  }
+
+  const transcript = parts.join("\n");
+  if (!transcript.trim()) throw new Error("音声を文字起こしできませんでした。");
+
+  const response = await invoke({
+    mode: "note",
+    transcript,
+    title: title || "",
+    course: course || ""
+  });
   const data = response?.data || {};
   if (data.error) throw new Error(data.error);
 
   await base44.entities.LectureNote.update(noteId, {
-    transcript: data.transcript || "",
+    transcript,
     summary: data.summary || "",
     key_points: data.key_points || [],
     outline: data.outline || [],

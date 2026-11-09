@@ -60,7 +60,7 @@ export default function NoteDetail() {
       setNote((current) => ({ ...current, status: "processing", error_message: "" }));
       await generateNote({
         noteId: id,
-        audioUrl: note.audio_url,
+        audioUrls: note.audio_urls?.length ? note.audio_urls : [note.audio_url],
         title: note.title,
         course: note.course
       });
@@ -165,7 +165,7 @@ export default function NoteDetail() {
 
               <div className="flex items-center gap-2">
                 {note.audio_url ? (
-                  <AudioPlayer src={note.audio_url}>
+                  <AudioPlayer src={note.audio_url} urls={note.audio_urls}>
                     <NoteMenuButton onDelete={() => setConfirmOpen(true)} />
                   </AudioPlayer>
                 ) : (
