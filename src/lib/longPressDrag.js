@@ -1,8 +1,11 @@
 const HOLD_MS = 300;
 const MOVE_TOLERANCE = 16;
 
-// 長押ししたままドラッグすると移動できる。長押しが成立する前に大きく動いた場合だけキャンセルする。
-export function startLongPressDrag(event, { onActivate, onDrag, onEnd }) {
+// 長押し（または即時）でドラッグを開始する。開始前に大きく動いた場合だけキャンセルする。
+export function startLongPressDrag(
+  event,
+  { immediate = false, onActivate, onDrag, onEnd }
+) {
   const pointerId = event.pointerId;
   const startX = event.clientX;
   const startY = event.clientY;
@@ -44,11 +47,17 @@ export function startLongPressDrag(event, { onActivate, onDrag, onEnd }) {
     onDrag(ev.clientX - startX, ev.clientY - startY);
   }
 
-  timer = window.setTimeout(() => {
+  const activate = () => {
     if (finished) return;
     dragging = true;
     onActivate?.();
-  }, HOLD_MS);
+  };
+
+  if (immediate) {
+    activate();
+  } else {
+    timer = window.setTimeout(activate, HOLD_MS);
+  }
 
   window.addEventListener("pointermove", handleMove);
   window.addEventListener("pointerup", handleEnd);

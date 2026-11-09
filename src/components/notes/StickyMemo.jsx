@@ -3,14 +3,15 @@ import { GripHorizontal, X } from "lucide-react";
 import { startLongPressDrag } from "@/lib/longPressDrag";
 import { cn } from "@/lib/utils";
 
-// まとめの隙間に貼る付箋メモ（長押ししたままドラッグで移動できる）
+// まとめの隙間に貼る付箋メモ。
+// マウスは押したまま、指は長押ししたままドラッグで移動できる。
 export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }) {
   const [text, setText] = useState(memo.text || "");
   const [editing, setEditing] = useState(!memo.text);
-  const [grabbing, setGrabbing] = useState(false);
   const noteRef = useRef(null);
-  const draggedRef = useRef(false);
-  const draggedUntilRef = useRef(0);
+  const movedRef = useRef(false);
+  // ドラッグ直後のクリックで編集モードに入らないようにする
+  const ignoreClickUntilRef = useRef(0);
 
   const commit = () => {
     if (!text.trim()) {
@@ -32,18 +33,21 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
 
     const base = { x: memo.x || 0, y: memo.y || 0 };
     let position = base;
+    movedRef.current = false;
 
     startLongPressDrag(event, {
+      // マウスのときは待たずにそのまま動かせるようにする
+      immediate: event.pointerType === "mouse",
       onActivate: () => {
-        draggedRef.current = true;
-        setGrabbing(true);
         window.getSelection()?.removeAllRanges();
         document.body.style.userSelect = "none";
         document.body.style.webkitUserSelect = "none";
         element.style.zIndex = "30";
+        element.style.cursor = "grabbing";
       },
       onDrag: (dx, dy) => {
-        position = { x: base.x + dx, y: base.y + dy };
+        movedRef.current = true;
+        position = { x: Math.round(base.x + dx), y: Math.round(base.y + dy) };
         element.style.transform =
           `translate(${position.x}px, ${position.y}px) rotate(${angle}deg)`;
       },
@@ -52,17 +56,19 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
         document.body.style.webkitUserSelect = "";
         window.getSelection()?.removeAllRanges();
         element.style.zIndex = "";
-        setGrabbing(false);
-        if (position.x !== base.x || position.y !== base.y) onMove(position);
-        // ドラッグ直後にタップ扱いで編集モードに入らないよう、少しだけ待つ
-        draggedUntilRef.current = Date.now() + 400;
-        draggedRef.current = false;
+        element.style.cursor = "";
+        element.style.transform =
+          `translate(${position.x}px, ${position.y}px) rotate(${angle}deg)`;
+        if (movedRef.current) {
+          ignoreClickUntilRef.current = Date.now() + 400;
+          if (position.x !== base.x || position.y !== base.y) onMove(position);
+        }
       }
     });
   };
 
   const startEditing = () => {
-    if (draggedRef.current || Date.now() < draggedUntilRef.current) return;
+    if (Date.now() < ignoreClickUntilRef.current) return;
     setEditing(true);
   };
 
@@ -75,9 +81,8 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
         transform: `translate(${memo.x || 0}px, ${memo.y || 0}px) rotate(${angle}deg)`
       }}
       className={cn(
-        "relative w-44 shrink-0 touch-none rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15",
-        !editing && "select-none",
-        grabbing ? "cursor-grabbing" : "cursor-grab"
+        "relative w-44 shrink-0 cursor-grab touch-none rounded-sm bg-memo p-3 text-left shadow-md shadow-black/15",
+        !editing && "select-none"
       )}
     >
       <button
@@ -88,7 +93,7 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
           event.stopPropagation();
           onDelete();
         }}
-        className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-card text-muted-foreground shadow ring-1 ring-border"
+        className="absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-card text-muted-foreground shadow ring-1 ring-border"
       >
         <X className="h-3 w-3" />
       </button>
@@ -108,6 +113,9 @@ export default function StickyMemo({ memo, angle = 0, onSave, onMove, onDelete }
           onBlur={commit}
           rows={3}
           placeholder="メモを書きこむ"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") event.currentTarget.blur();
+          }}
           className="w-full resize-none bg-transparent font-hand text-[13px] leading-6 text-sticky-foreground outline-none placeholder:text-sticky-foreground/40"
         />
       ) : (
