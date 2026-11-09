@@ -11,6 +11,9 @@ export default function RecordingMemo({ value, onChange }) {
         <span>自分のメモ（録音を止めても残ります）</span>
       </div>
       <MemoCanvas value={value} onChange={onChange} />
+      <p className="mt-2 text-[11px] leading-5 text-foreground/50">
+        空行を一行入れると、そこから先は別の付箋に分かれます。
+      </p>
     </div>
   );
 }
