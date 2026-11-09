@@ -1,5 +1,4 @@
 import { base44 } from "@/api/base44Client";
-import { splitAudioFile } from "@/lib/audioSplit";
 
 export function formatDuration(seconds) {
   const total = Number(seconds) || 0;
@@ -149,15 +148,16 @@ async function isTooLargeUrl(audioUrl) {
   }
 }
 
-// 端末で分割してから1つずつ文字起こしする
+// 大きな音声はサーバー側で分けてもらい、1つずつ文字起こしする
 async function transcribeBySplitting(audioUrl) {
-  const blob = await (await fetch(audioUrl)).blob();
-  const extension = (audioUrl.split("?")[0].split(".").pop() || "mp3").toLowerCase();
-  const file = new File([blob], `lecture.${extension}`, { type: blob.type || "audio/mpeg" });
-  const urls = await uploadAudioFiles(await splitAudioFile(file));
+  const response = await invoke({ mode: "split", audio_url: audioUrl });
+  const parts = response?.data?.parts || [];
+  if (parts.length === 0) {
+    throw new Error("音声を分割できませんでした。25MB以下の音声でお試しください。");
+  }
 
   const texts = [];
-  for (const url of urls) {
+  for (const url of parts) {
     texts.push(await transcribeAudioUrl(url));
   }
   return texts.filter(Boolean).join("\n");

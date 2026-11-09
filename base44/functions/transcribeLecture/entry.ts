@@ -94,6 +94,143 @@ function splitMp3(bytes) {
   return parts;
 }
 
+// WebM を読むための小さなパーサー
+function readVint(bytes, pos, keepMarker) {
+  const first = bytes[pos];
+  if (first === undefined) return null;
+
+  let length = 1;
+  let mask = 0x80;
+  while (length <= 8 && !(first & mask)) {
+    mask >>= 1;
+    length += 1;
+  }
+  if (length > 8) return null;
+
+  let value = keepMarker ? first : first & (mask - 1);
+  let unknown = !keepMarker && value === mask - 1;
+  for (let i = 1; i < length; i += 1) {
+    const byte = bytes[pos + i];
+    value = value * 256 + byte;
+    if (byte !== 0xff) unknown = false;
+  }
+
+  return { length, value, unknown };
+}
+
+function writeSize(bytes, pos, length, value) {
+  let remaining = value;
+  for (let i = length - 1; i >= 0; i -= 1) {
+    bytes[pos + i] = remaining % 256;
+    remaining = Math.floor(remaining / 256);
+  }
+  bytes[pos] |= 0x80 >> (length - 1);
+}
+
+// WebM は先頭のヘッダーを各パーツに付け直し、区切りのよい位置で分ける
+function splitWebm(bytes) {
+  const headId = readVint(bytes, 0, true);
+  if (!headId) return [];
+  const headSize = readVint(bytes, headId.length, false);
+  if (!headSize || headSize.unknown) return [];
+
+  const segmentPos = headId.length + headSize.length + headSize.value;
+  const segmentId = readVint(bytes, segmentPos, true);
+  if (!segmentId || segmentId.value !== 0x18538067) return [];
+
+  const segmentSizePos = segmentPos + segmentId.length;
+  const segmentSize = readVint(bytes, segmentSizePos, false);
+  if (!segmentSize) return [];
+
+  const payloadStart = segmentSizePos + segmentSize.length;
+  const limit = segmentSize.unknown
+    ? bytes.length
+    : Math.min(payloadStart + segmentSize.value, bytes.length);
+
+  const clusters = [];
+  let cursor = payloadStart;
+
+  while (cursor < limit) {
+    const id = readVint(bytes, cursor, true);
+    if (!id) break;
+    const size = readVint(bytes, cursor + id.length, false);
+    if (!size || size.unknown) break;
+    const dataStart = cursor + id.length + size.length;
+
+    if (id.value === 0x1f43b675) {
+      const end = Math.min(dataStart + size.value, limit);
+      clusters.push({ start: cursor, end });
+      cursor = end;
+      continue;
+    }
+
+    cursor = dataStart + size.value;
+  }
+
+  if (clusters.length < 2) return [];
+
+  const headerLength = clusters[0].start;
+  const parts = [];
+  let index = 0;
+
+  while (index < clusters.length) {
+    let stop = index;
+    while (
+      stop + 1 < clusters.length &&
+      clusters[stop + 1].end - clusters[index].start + headerLength <= PART_BYTES
+    ) {
+      stop += 1;
+    }
+
+    const body = bytes.subarray(clusters[index].start, clusters[stop].end);
+    const part = new Uint8Array(headerLength + body.length);
+    part.set(bytes.subarray(0, headerLength), 0);
+    part.set(body, headerLength);
+    writeSize(part, segmentSizePos, segmentSize.length, part.length - payloadStart);
+
+    parts.push(part);
+    index = stop + 1;
+  }
+
+  return parts;
+}
+
+// 大きな音声を、文字起こしできる大きさに分けて保存し、その URL を返す
+async function splitAudioParts(base44, audioUrl) {
+  const normalized = await normalizeAudioUrl(base44, audioUrl);
+  const extension = extensionOf(normalized);
+
+  let chunks: Uint8Array[] = [];
+  let suffix = extension;
+  let mime = '';
+
+  const bytes = new Uint8Array(await (await fetch(normalized)).arrayBuffer());
+
+  if (extension === 'wav') {
+    chunks = splitWav(bytes);
+    mime = 'audio/wav';
+  } else if (extension === 'webm') {
+    chunks = splitWebm(bytes);
+    suffix = 'webm';
+    mime = 'audio/webm';
+  } else if (extension === 'mp3' || extension === 'mpeg') {
+    chunks = splitMp3(bytes);
+    suffix = 'mp3';
+    mime = 'audio/mpeg';
+  } else {
+    return [];
+  }
+
+  const urls = [];
+  for (let index = 0; index < chunks.length; index += 1) {
+    const file = new File([chunks[index]], `lecture-part-${index + 1}.${suffix}`, { type: mime });
+    const uploaded = await base44.asServiceRole.integrations.Core.UploadPublicFile({ file });
+    if (uploaded?.file_url) urls.push(uploaded.file_url);
+  }
+
+  return urls;
+}
+
 async function transcribeUrl(base44, audioUrl) {
   const raw = await base44.asServiceRole.integrations.Core.TranscribeAudio({ audio_url: audioUrl });
   return typeof raw === 'string' ? raw.trim() : '';
@@ -182,6 +319,19 @@ export default async function (req) {
     const mode = typeof body?.mode === 'string' ? body.mode : '';
     const course = typeof body?.course === 'string' ? body.course.slice(0, 120) : '';
     const title = typeof body?.title === 'string' ? body.title.slice(0, 200) : '';
+
+    // 大きな音声を、文字起こしできる大きさに分ける
+    if (mode === 'split') {
+      const audioUrl = typeof body?.audio_url === 'string' ? body.audio_url.trim() : '';
+      if (!audioUrl) {
+        return Response.json({ error: 'audio_url is required' }, { status: 400 });
+      }
+      const parts = await splitAudioParts(base44, audioUrl);
+      if (parts.length === 0) {
+        return Response.json({ error: '音声を分割できませんでした。' }, { status: 422 });
+      }
+      return Response.json({ parts });
+    }
 
     // 分割された音声を1つずつ文字起こしする
     if (mode === 'transcribe') {
