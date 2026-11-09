@@ -15,6 +15,8 @@ export default function SummaryMemoSlot({ anchor, anchors, memos, onChange }) {
     onChange(memos.map((memo) => (memo.id === id ? { ...memo, text } : memo)));
   const moveMemo = (id, position) =>
     onChange(memos.map((memo) => (memo.id === id ? { ...memo, ...position } : memo)));
+  const colorMemo = (id, color) =>
+    onChange(memos.map((memo) => (memo.id === id ? { ...memo, color } : memo)));
   const deleteMemo = (id) => onChange(memos.filter((memo) => memo.id !== id));
 
   return (
@@ -26,6 +28,7 @@ export default function SummaryMemoSlot({ anchor, anchors, memos, onChange }) {
           angle={index % 2 === 0 ? -1.4 : 1.2}
           onSave={(text) => saveMemo(memo.id, text)}
           onMove={(position) => moveMemo(memo.id, position)}
+          onColor={(color) => colorMemo(memo.id, color)}
           onDelete={() => deleteMemo(memo.id)}
         />
       ))}

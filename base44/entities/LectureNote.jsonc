@@ -115,6 +115,9 @@
           "text": {
             "type": "string"
           },
+          "color": {
+            "type": "string"
+          },
           "x": {
             "type": "number"
           },
