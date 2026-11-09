@@ -25,7 +25,13 @@ export function formatDate(value) {
   return date.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
 }
 
+// 応答が返らずに切れた通信エラーかどうか
+const isNetworkError = (error) => /network error|failed to fetch|timeout/i.test(error?.message || "");
+
 export function noteErrorMessage(error) {
+  if (isNetworkError(error)) {
+    return "通信が途切れました。電波の良い場所でもう一度お試しください。";
+  }
   return (
     error?.response?.data?.error ||
     error?.message ||
@@ -33,12 +39,27 @@ export function noteErrorMessage(error) {
   );
 }
 
+// 送信中に切れた場合は一度だけ送り直す
+export async function uploadAudio(file) {
+  try {
+    const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+    return file_url;
+  } catch (error) {
+    if (!isNetworkError(error)) throw error;
+    const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+    return file_url;
+  }
+}
+
 export async function generateNote({ noteId, audioUrl, title, course }) {
-  const response = await base44.functions.invoke("transcribeLecture", {
-    audio_url: audioUrl,
-    title: title || "",
-    course: course || ""
-  });
+  const payload = { audio_url: audioUrl, title: title || "", course: course || "" };
+  let response;
+  try {
+    response = await base44.functions.invoke("transcribeLecture", payload);
+  } catch (error) {
+    if (!isNetworkError(error)) throw error;
+    response = await base44.functions.invoke("transcribeLecture", payload);
+  }
   const data = response?.data || {};
   if (data.error) throw new Error(data.error);
 

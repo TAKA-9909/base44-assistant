@@ -8,7 +8,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import AudioCapture from "@/components/notes/AudioCapture";
 import NotePaper from "@/components/notes/NotePaper";
 import PageNav from "@/components/nav/PageNav";
-import { formatDate, generateNote, noteErrorMessage } from "@/lib/lectureUtils";
+import { formatDate, generateNote, noteErrorMessage, uploadAudio } from "@/lib/lectureUtils";
 
 export default function NewLecture() {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export default function NewLecture() {
       const file = new File([capture.blob], `lecture-${Date.now()}.${extension}`, {
         type: isWebm ? "video/webm" : capture.blob.type || "audio/mpeg"
       });
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      const file_url = await uploadAudio(file);
 
       created = await base44.entities.LectureNote.create({
         title: title.trim() || `${formatDate(lectureDate)}の講義`,

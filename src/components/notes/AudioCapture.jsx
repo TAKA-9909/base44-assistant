@@ -43,7 +43,11 @@ export default function AudioCapture({ value, onChange }) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const mimeType = pickMimeType();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      // 長い講義でも送信が途切れないよう、音声だけを小さく録音する
+      const recorder = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 32000
+      });
       chunksRef.current = [];
       elapsedRef.current = 0;
       recorder.ondataavailable = (event) => {
@@ -85,6 +89,11 @@ export default function AudioCapture({ value, onChange }) {
     event.target.value = "";
     if (!file) return;
     setError("");
+    // 文字起こしできる音声は 25MB までなので、それを超えるファイルは先に知らせる
+    if (file.size > 25 * 1024 * 1024) {
+      setError("ファイルが大きすぎます（25MBまで）。講義を分けて読み込んでください。");
+      return;
+    }
     const url = URL.createObjectURL(file);
     const duration = await readDuration(url);
     onChange({ blob: file, url, source: "upload", duration });
