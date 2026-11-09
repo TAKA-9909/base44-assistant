@@ -2,14 +2,16 @@ import { base44 } from "@/api/base44Client";
 import { parseCanvas } from "@/lib/notebookCanvas";
 
 // 録音中にメモした内容（キャンバス、または文章）を付箋の文に分ける
+// 空行（改行を一行あける）で区切られた部分は、それぞれ別の付箋にする
 export function recordingMemoTexts(content) {
   const layout = parseCanvas(content);
-  if (layout) {
-    return layout.blocks.map((block) => (block.text || "").trim()).filter(Boolean);
-  }
-  return (content || "")
-    .split(/\n+/)
-    .map((line) => line.trim())
+  const blocks = layout
+    ? layout.blocks.map((block) => block.text || "")
+    : [content || ""];
+
+  return blocks
+    .flatMap((text) => text.split(/\n\s*\n/))
+    .map((text) => text.trim())
     .filter(Boolean);
 }
 
