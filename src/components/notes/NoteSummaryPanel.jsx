@@ -75,7 +75,6 @@ export default function NoteSummaryPanel({ note, memos = [], onMemosChange = () 
       )}
 
       <section className="border-t border-border/70 pt-8">
-        <SectionTitle>メモ</SectionTitle>
         <SummaryMemoSlot
           anchor="summary"
           anchors={MEMO_ANCHORS}

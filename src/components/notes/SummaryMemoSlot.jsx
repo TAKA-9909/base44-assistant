@@ -33,7 +33,7 @@ export default function SummaryMemoSlot({ anchor, anchors, memos, onChange }) {
       <button
         type="button"
         onClick={addMemo}
-        className="flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+        className="flex items-center gap-1.5 rounded-full border border-dashed border-muted-foreground/60 bg-secondary px-3 py-1.5 text-xs font-medium text-foreground/80 transition hover:border-foreground/70 hover:text-foreground"
       >
         <Plus className="h-3.5 w-3.5" />
         メモを貼る
