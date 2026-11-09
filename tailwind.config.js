@@ -77,6 +77,7 @@ module.exports = {
   				'3': 'hsl(var(--tab-3))',
   				'4': 'hsl(var(--tab-4))'
   			},
+  			memo: 'hsl(var(--memo))',
   			sticky: {
   				foreground: 'hsl(var(--sticky-foreground))',
   				'1': 'hsl(var(--sticky-1))',
